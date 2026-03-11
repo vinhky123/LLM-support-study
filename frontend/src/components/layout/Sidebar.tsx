@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   MessageSquare,
@@ -64,6 +64,8 @@ export default function Sidebar() {
   const [defaultModelId, setDefaultModelId] = useState("");
   const [certDropdownOpen, setCertDropdownOpen] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const certDropdownRef = useRef<HTMLDivElement>(null);
+  const modelDropdownRef = useRef<HTMLDivElement>(null);
 
   const domainProgress = getDomainProgress();
   const usageRecord = getCurrentRecord();
@@ -95,6 +97,27 @@ export default function Sidebar() {
       .catch(() => {});
   }, [currentCertId, initDomainProgress]);
 
+  useEffect(() => {
+    function handleOutsideClick(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        certDropdownRef.current &&
+        !certDropdownRef.current.contains(target)
+      ) {
+        setCertDropdownOpen(false);
+      }
+      if (
+        modelDropdownRef.current &&
+        !modelDropdownRef.current.contains(target)
+      ) {
+        setModelDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
   return (
     <aside className="w-64 bg-sidebar text-text-sidebar flex flex-col h-full shrink-0">
       {/* Logo + Selectors */}
@@ -107,7 +130,7 @@ export default function Sidebar() {
         </div>
 
         {/* Cert Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={certDropdownRef}>
           <button
             onClick={() => {
               setCertDropdownOpen(!certDropdownOpen);
@@ -148,7 +171,7 @@ export default function Sidebar() {
         </div>
 
         {/* Model Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={modelDropdownRef}>
           <button
             onClick={() => {
               setModelDropdownOpen(!modelDropdownOpen);
@@ -187,6 +210,9 @@ export default function Sidebar() {
                   </div>
                   <div className="opacity-50 text-[10px]">
                     {m.provider} · {m.inputCost} in / {m.outputCost} out
+                  </div>
+                  <div className="opacity-40 text-[10px] mt-0.5 leading-snug">
+                    {m.description}
                   </div>
                 </button>
               ))}

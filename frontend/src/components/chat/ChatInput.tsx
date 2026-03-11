@@ -117,7 +117,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          placeholder="Hỏi về AWS DEA-C01... (Shift+Enter để xuống dòng)"
+          placeholder="Hỏi về AWS hoặc chứng chỉ bạn đang học... (Shift+Enter để xuống dòng)"
           rows={1}
           className="flex-1 resize-none rounded-xl border border-border bg-surface-alt px-4 py-2.5 text-sm
                      focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary

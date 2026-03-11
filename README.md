@@ -128,9 +128,10 @@ docker compose restart
 |---|---|---:|---:|---|---|
 | Gemini 2.0 Flash Lite | Google | $0.075 / 1M | $0.30 / 1M | Yes | Default, best cost/perf |
 | Gemini 2.0 Flash | Google | $0.15 / 1M | $0.60 / 1M | Yes | Balanced |
-| Gemini 2.5 Flash | Google | $0.30 / 1M | $2.50 / 1M | Yes | Better quality, pricier |
-| Grok 4.1 Fast (non-reasoning) | xAI | $0.20 / 1M | $0.50 / 1M | No | Text-only |
-| Amazon Nova Micro | Amazon | $0.035 / 1M | $0.14 / 1M | No | Cheapest text model |
+| Gemini 2.5 Flash | Google | $0.30 / 1M | $2.50 / 1M | Yes | Better quality, still reasonable |
+| GPT-4o Mini | OpenAI | $0.15 / 1M | $0.60 / 1M | Yes | Affordable GPT option |
+| GPT-4.1 Mini | OpenAI | $0.40 / 1M | $1.60 / 1M | Yes | Strong mini GPT tier |
+| Claude Sonnet 4.6 | Anthropic | $3.00 / 1M | $15.00 / 1M | Yes | Claude flagship quality |
 
 Notes:
 - Models with **Vision = No** should be used for text-only chat.
