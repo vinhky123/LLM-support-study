@@ -40,6 +40,22 @@ export interface DomainProgress {
   topicsStudied: string[];
 }
 
+export interface CertProfile {
+  id: string;
+  name: string;
+  fullName: string;
+}
+
+export interface AIModel {
+  id: string;
+  name: string;
+  provider: string;
+  inputCost: string;
+  outputCost: string;
+  vision: boolean;
+  description: string;
+}
+
 export interface Flashcard {
   question: string;
   answer: string;

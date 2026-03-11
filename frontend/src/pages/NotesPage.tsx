@@ -15,8 +15,14 @@ export default function NotesPage() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { sessions, getCurrentSession, currentSessionId, switchSession } =
-    useChatStore();
+  const {
+    sessions,
+    getCurrentSession,
+    currentSessionId,
+    currentCertId,
+    currentModelId,
+    switchSession,
+  } = useChatStore();
 
   const session = getCurrentSession();
 
@@ -25,7 +31,7 @@ export default function NotesPage() {
     setLoading(true);
     setError("");
     try {
-      const result = await generateNotes(session.messages);
+      const result = await generateNotes(session.messages, currentCertId, currentModelId);
       setNotes(result);
     } catch (err) {
       setError(
@@ -49,7 +55,6 @@ export default function NotesPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="px-6 py-3 bg-white border-b border-border flex items-center justify-between">
         <div>
           <h2 className="font-semibold text-sm flex items-center gap-2">
@@ -75,7 +80,6 @@ export default function NotesPage() {
       </div>
 
       <div className="flex-1 overflow-hidden flex">
-        {/* Session Selector Panel */}
         <div className="w-64 border-r border-border bg-white p-4 overflow-y-auto">
           <h3 className="text-xs font-semibold text-text-secondary uppercase mb-3">
             Chọn session để tạo notes
@@ -123,7 +127,6 @@ export default function NotesPage() {
           )}
         </div>
 
-        {/* Notes Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">

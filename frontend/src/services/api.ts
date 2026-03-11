@@ -6,6 +6,8 @@ import type {
   Flashcard,
   SummaryDomain,
   QuizQuestion,
+  CertProfile,
+  AIModel,
 } from "../types";
 
 const API_BASE = "/api";
@@ -15,6 +17,8 @@ export async function sendChatMessage(
   message: string,
   image?: ImageData,
   onChunk?: (text: string) => void,
+  certId: string = "common",
+  model: string = "",
 ): Promise<string> {
   const body = {
     messages: messages.map((m) => ({
@@ -24,6 +28,8 @@ export async function sendChatMessage(
     })),
     message,
     image: image ? { data: image.data, mimeType: image.mimeType } : null,
+    certId,
+    model,
   };
 
   const res = await fetch(`${API_BASE}/chat/message`, {
@@ -68,18 +74,35 @@ export async function sendChatMessage(
   return fullText;
 }
 
-export async function getQuickPrompts(): Promise<QuickPrompt[]> {
-  const res = await fetch(`${API_BASE}/chat/quick-prompts`);
+export async function getProfiles(): Promise<CertProfile[]> {
+  const res = await fetch(`${API_BASE}/chat/profiles`);
   return res.json();
 }
 
-export async function getDomains(): Promise<Domain[]> {
-  const res = await fetch(`${API_BASE}/chat/domains`);
+export async function getQuickPrompts(certId: string = "common"): Promise<QuickPrompt[]> {
+  const res = await fetch(`${API_BASE}/chat/quick-prompts?certId=${certId}`);
+  return res.json();
+}
+
+export async function getDomains(certId: string = "common"): Promise<Domain[]> {
+  const res = await fetch(`${API_BASE}/chat/domains?certId=${certId}`);
+  return res.json();
+}
+
+export async function getQuizTopics(certId: string = "common"): Promise<string[]> {
+  const res = await fetch(`${API_BASE}/chat/quiz-topics?certId=${certId}`);
+  return res.json();
+}
+
+export async function getModels(): Promise<{ models: AIModel[]; default: string }> {
+  const res = await fetch(`${API_BASE}/chat/models`);
   return res.json();
 }
 
 export async function generateNotes(
   messages: ChatMessage[],
+  certId: string = "common",
+  model: string = "",
 ): Promise<string> {
   const body = {
     messages: messages.map((m) => ({
@@ -87,6 +110,8 @@ export async function generateNotes(
       content: m.content,
       image: m.image ? { data: "(image)", mimeType: m.image.mimeType } : undefined,
     })),
+    certId,
+    model,
   };
 
   const res = await fetch(`${API_BASE}/notes/generate`, {
@@ -102,11 +127,13 @@ export async function generateNotes(
 
 export async function generateFlashcards(
   content: string,
+  certId: string = "common",
+  model: string = "",
 ): Promise<Flashcard[]> {
   const res = await fetch(`${API_BASE}/notes/flashcards`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, certId, model }),
   });
 
   if (!res.ok) throw new Error(`Flashcard generation failed: ${res.status}`);
@@ -116,11 +143,13 @@ export async function generateFlashcards(
 
 export async function generateSummary(
   content: string,
+  certId: string = "common",
+  model: string = "",
 ): Promise<SummaryDomain[]> {
   const res = await fetch(`${API_BASE}/notes/summary`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, certId, model }),
   });
 
   if (!res.ok) throw new Error(`Summary generation failed: ${res.status}`);
@@ -131,11 +160,13 @@ export async function generateSummary(
 export async function generateQuizFromTopic(
   topic: string,
   count = 5,
+  certId: string = "common",
+  model: string = "",
 ): Promise<QuizQuestion[]> {
   const res = await fetch(`${API_BASE}/quiz/from-topic`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ topic, count }),
+    body: JSON.stringify({ topic, count, certId, model }),
   });
 
   if (!res.ok) throw new Error(`Quiz generation failed: ${res.status}`);
@@ -146,11 +177,13 @@ export async function generateQuizFromTopic(
 export async function generateQuizFromNotes(
   notes: string,
   count = 5,
+  certId: string = "common",
+  model: string = "",
 ): Promise<QuizQuestion[]> {
   const res = await fetch(`${API_BASE}/quiz/from-notes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ notes, count }),
+    body: JSON.stringify({ notes, count, certId, model }),
   });
 
   if (!res.ok) throw new Error(`Quiz generation failed: ${res.status}`);

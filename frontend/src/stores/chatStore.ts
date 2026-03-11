@@ -9,7 +9,9 @@ function generateId() {
 interface ChatStore {
   sessions: ChatSession[];
   currentSessionId: string | null;
-  domainProgress: DomainProgress[];
+  currentCertId: string;
+  currentModelId: string;
+  domainProgressMap: Record<string, DomainProgress[]>;
   isLoading: boolean;
 
   getCurrentSession: () => ChatSession | null;
@@ -20,11 +22,14 @@ interface ChatStore {
   addMessage: (message: Omit<ChatMessage, "id" | "timestamp">) => void;
   updateLastAssistantMessage: (content: string) => void;
   setLoading: (loading: boolean) => void;
+  setCertId: (certId: string) => void;
+  setModelId: (modelId: string) => void;
+  getDomainProgress: () => DomainProgress[];
   updateDomainProgress: (
     domainId: string,
     confidence: DomainProgress["confidence"],
   ) => void;
-  addStudiedTopic: (domainId: string, topic: string) => void;
+  initDomainProgress: (domainIds: string[]) => void;
 }
 
 export const useChatStore = create<ChatStore>()(
@@ -32,12 +37,9 @@ export const useChatStore = create<ChatStore>()(
     (set, get) => ({
       sessions: [],
       currentSessionId: null,
-      domainProgress: [
-        { domainId: "ingestion", confidence: "not_started", topicsStudied: [] },
-        { domainId: "store", confidence: "not_started", topicsStudied: [] },
-        { domainId: "operations", confidence: "not_started", topicsStudied: [] },
-        { domainId: "security", confidence: "not_started", topicsStudied: [] },
-      ],
+      currentCertId: "common",
+      currentModelId: "",
+      domainProgressMap: {},
       isLoading: false,
 
       getCurrentSession: () => {
@@ -111,21 +113,45 @@ export const useChatStore = create<ChatStore>()(
 
       setLoading: (isLoading) => set({ isLoading }),
 
-      updateDomainProgress: (domainId, confidence) =>
-        set((state) => ({
-          domainProgress: state.domainProgress.map((d) =>
-            d.domainId === domainId ? { ...d, confidence } : d,
-          ),
-        })),
+      setCertId: (certId) => set({ currentCertId: certId }),
 
-      addStudiedTopic: (domainId, topic) =>
-        set((state) => ({
-          domainProgress: state.domainProgress.map((d) =>
-            d.domainId === domainId && !d.topicsStudied.includes(topic)
-              ? { ...d, topicsStudied: [...d.topicsStudied, topic] }
-              : d,
-          ),
-        })),
+      setModelId: (modelId) => set({ currentModelId: modelId }),
+
+      getDomainProgress: () => {
+        const { currentCertId, domainProgressMap } = get();
+        return domainProgressMap[currentCertId] ?? [];
+      },
+
+      initDomainProgress: (domainIds) =>
+        set((state) => {
+          const certId = state.currentCertId;
+          const existing = state.domainProgressMap[certId];
+          if (existing && existing.length > 0) return state;
+          return {
+            domainProgressMap: {
+              ...state.domainProgressMap,
+              [certId]: domainIds.map((id) => ({
+                domainId: id,
+                confidence: "not_started" as const,
+                topicsStudied: [],
+              })),
+            },
+          };
+        }),
+
+      updateDomainProgress: (domainId, confidence) =>
+        set((state) => {
+          const certId = state.currentCertId;
+          const current = state.domainProgressMap[certId] ?? [];
+          return {
+            domainProgressMap: {
+              ...state.domainProgressMap,
+              [certId]: current.map((d) =>
+                d.domainId === domainId ? { ...d, confidence } : d,
+              ),
+            },
+          };
+        }),
     }),
     { name: "cloud-study-chat" },
   ),

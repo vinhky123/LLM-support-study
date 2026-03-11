@@ -5,9 +5,10 @@ import { GraduationCap } from "lucide-react";
 
 interface Props {
   messages: ChatMessage[];
+  certName?: string;
 }
 
-export default function ChatWindow({ messages }: Props) {
+export default function ChatWindow({ messages, certName }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,10 +23,10 @@ export default function ChatWindow({ messages }: Props) {
             <GraduationCap className="w-8 h-8 text-aws-orange" />
           </div>
           <h2 className="text-xl font-bold text-text mb-2">
-            AWS DEA-C01 Study Assistant
+            {certName ?? "AWS Cloud"} Study Assistant
           </h2>
           <p className="text-text-secondary text-sm leading-relaxed">
-            Hỏi bất kỳ câu hỏi nào về AWS Data Engineering. Sử dụng các
+            Hỏi bất kỳ câu hỏi nào về AWS. Sử dụng các
             Quick Prompts bên dưới hoặc gõ câu hỏi trực tiếp. Bạn cũng có thể
             gửi ảnh (kiến trúc, diagram, screenshot) để phân tích.
           </p>

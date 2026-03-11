@@ -10,12 +10,14 @@ class QuizFromTopicRequest(BaseModel):
     topic: str
     count: int = 5
     certId: str = "common"
+    model: str = ""
 
 
 class QuizFromNotesRequest(BaseModel):
     notes: str
     count: int = 5
     certId: str = "common"
+    model: str = ""
 
 
 @router.post("/from-topic")
@@ -25,7 +27,7 @@ async def quiz_from_topic(request: QuizFromTopicRequest):
         f"Generate {request.count} exam-style multiple choice questions "
         f"about: {request.topic}"
     )
-    questions = generate_json(prompt, system_instruction)
+    questions = generate_json(prompt, system_instruction, request.model)
     return {"questions": questions}
 
 
@@ -36,5 +38,5 @@ async def quiz_from_notes(request: QuizFromNotesRequest):
         f"Generate {request.count} exam-style multiple choice questions "
         f"based on these study notes:\n\n{request.notes}"
     )
-    questions = generate_json(prompt, system_instruction)
+    questions = generate_json(prompt, system_instruction, request.model)
     return {"questions": questions}

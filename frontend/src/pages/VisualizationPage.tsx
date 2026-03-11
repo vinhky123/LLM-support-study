@@ -11,6 +11,7 @@ import MindMapView from "../components/visualization/MindMap";
 import FlashcardsView from "../components/visualization/Flashcards";
 import SummaryTableView from "../components/visualization/SummaryTable";
 import { generateFlashcards, generateSummary } from "../services/api";
+import { useChatStore } from "../stores/chatStore";
 import type { Flashcard, SummaryDomain } from "../types";
 
 type ViewMode = "mindmap" | "flashcards" | "summary";
@@ -29,6 +30,7 @@ export default function VisualizationPage() {
   const [summary, setSummary] = useState<SummaryDomain[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { currentCertId, currentModelId } = useChatStore();
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,7 +70,7 @@ export default function VisualizationPage() {
     if (mode === "flashcards" && flashcards.length === 0 && content) {
       setLoading(true);
       try {
-        const result = await generateFlashcards(content);
+        const result = await generateFlashcards(content, currentCertId, currentModelId);
         setFlashcards(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to generate flashcards");
@@ -80,7 +82,7 @@ export default function VisualizationPage() {
     if (mode === "summary" && summary.length === 0 && content) {
       setLoading(true);
       try {
-        const result = await generateSummary(content);
+        const result = await generateSummary(content, currentCertId, currentModelId);
         setSummary(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to generate summary");
@@ -92,33 +94,26 @@ export default function VisualizationPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="px-6 py-3 bg-white border-b border-border flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <h2 className="font-semibold text-sm">Knowledge Visualization</h2>
-            <p className="text-xs text-text-secondary">
-              {fileName || "Upload file .md để bắt đầu"}
-            </p>
-          </div>
+        <div>
+          <h2 className="font-semibold text-sm">Knowledge Visualization</h2>
+          <p className="text-xs text-text-secondary">
+            {fileName || "Upload file .md để bắt đầu"}
+          </p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs
-                            bg-primary text-white hover:bg-primary-hover cursor-pointer transition-colors">
-            <Upload className="w-3.5 h-3.5" />
-            Upload .md
-            <input
-              type="file"
-              accept=".md,.markdown,.txt"
-              className="hidden"
-              onChange={handleFileUpload}
-            />
-          </label>
-        </div>
+        <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs
+                          bg-primary text-white hover:bg-primary-hover cursor-pointer transition-colors">
+          <Upload className="w-3.5 h-3.5" />
+          Upload .md
+          <input
+            type="file"
+            accept=".md,.markdown,.txt"
+            className="hidden"
+            onChange={handleFileUpload}
+          />
+        </label>
       </div>
 
-      {/* View Tabs */}
       {content && (
         <div className="px-6 pt-3 bg-white border-b border-border">
           <div className="flex gap-1">
@@ -141,7 +136,6 @@ export default function VisualizationPage() {
         </div>
       )}
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
@@ -156,13 +150,13 @@ export default function VisualizationPage() {
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
           >
-            <div className="border-2 border-dashed border-border rounded-2xl p-12 text-center
-                           hover:border-primary/40 transition-colors cursor-pointer max-w-md"
-                 onClick={() => document.querySelector<HTMLInputElement>('input[type=\"file\"]')?.click()}>
+            <div
+              className="border-2 border-dashed border-border rounded-2xl p-12 text-center
+                         hover:border-primary/40 transition-colors cursor-pointer max-w-md"
+              onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
+            >
               <Upload className="w-10 h-10 text-border mx-auto mb-3" />
-              <h3 className="font-medium text-text mb-1">
-                Upload study notes
-              </h3>
+              <h3 className="font-medium text-text mb-1">Upload study notes</h3>
               <p className="text-sm text-text-secondary">
                 Kéo thả file .md hoặc click để chọn file.
                 <br />
@@ -174,20 +168,14 @@ export default function VisualizationPage() {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-              <p className="text-sm text-text-secondary">
-                AI đang phân tích notes...
-              </p>
+              <p className="text-sm text-text-secondary">AI đang phân tích notes...</p>
             </div>
           </div>
         ) : (
           <div className="h-full">
             {viewMode === "mindmap" && <MindMapView content={content} />}
-            {viewMode === "flashcards" && (
-              <FlashcardsView flashcards={flashcards} />
-            )}
-            {viewMode === "summary" && (
-              <SummaryTableView summary={summary} />
-            )}
+            {viewMode === "flashcards" && <FlashcardsView flashcards={flashcards} />}
+            {viewMode === "summary" && <SummaryTableView summary={summary} />}
           </div>
         )}
       </div>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   MessageSquare,
@@ -7,9 +8,13 @@ import {
   Plus,
   Trash2,
   GraduationCap,
+  ChevronDown,
+  Cpu,
+  Eye,
 } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
-import type { Domain, DomainProgress } from "../../types";
+import { getProfiles, getDomains, getModels } from "../../services/api";
+import type { CertProfile, Domain, DomainProgress, AIModel } from "../../types";
 
 const NAV_ITEMS = [
   { path: "/", icon: MessageSquare, label: "Chat" },
@@ -30,40 +35,156 @@ const CONFIDENCE_LABELS: Record<DomainProgress["confidence"], string> = {
   confident: "Nắm vững",
 };
 
-const DOMAINS: Domain[] = [
-  { id: "ingestion", name: "Ingestion & Transform", weight: 34, topics: [] },
-  { id: "store", name: "Data Store", weight: 26, topics: [] },
-  { id: "operations", name: "Operations", weight: 22, topics: [] },
-  { id: "security", name: "Security & Governance", weight: 18, topics: [] },
-];
-
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const {
     sessions,
     currentSessionId,
-    domainProgress,
+    currentCertId,
+    currentModelId,
+    setCertId,
+    setModelId,
     createSession,
     switchSession,
     deleteSession,
+    getDomainProgress,
     updateDomainProgress,
+    initDomainProgress,
   } = useChatStore();
+
+  const [profiles, setProfiles] = useState<CertProfile[]>([]);
+  const [domains, setDomains] = useState<Domain[]>([]);
+  const [models, setModels] = useState<AIModel[]>([]);
+  const [defaultModelId, setDefaultModelId] = useState("");
+  const [certDropdownOpen, setCertDropdownOpen] = useState(false);
+  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+
+  const domainProgress = getDomainProgress();
+  const currentProfile = profiles.find((p) => p.id === currentCertId);
+  const activeModelId = currentModelId || defaultModelId;
+  const currentModel = models.find((m) => m.id === activeModelId);
+
+  useEffect(() => {
+    getProfiles().then(setProfiles).catch(() => {});
+    getModels()
+      .then((data) => {
+        setModels(data.models);
+        setDefaultModelId(data.default);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (currentCertId === "common") {
+      setDomains([]);
+      return;
+    }
+    getDomains(currentCertId)
+      .then((d) => {
+        setDomains(d);
+        initDomainProgress(d.map((dom) => dom.id));
+      })
+      .catch(() => {});
+  }, [currentCertId, initDomainProgress]);
 
   return (
     <aside className="w-64 bg-sidebar text-text-sidebar flex flex-col h-full shrink-0">
-      {/* Logo */}
-      <div className="p-4 border-b border-white/10">
+      {/* Logo + Selectors */}
+      <div className="p-4 border-b border-white/10 space-y-2">
         <div className="flex items-center gap-2">
           <GraduationCap className="w-6 h-6 text-aws-orange" />
-          <div>
-            <h1 className="font-bold text-white text-sm leading-tight">
-              Cloud Study
-            </h1>
-            <span className="text-[10px] text-text-sidebar opacity-70">
-              AWS DEA-C01
+          <h1 className="font-bold text-white text-sm leading-tight">
+            Cloud Study
+          </h1>
+        </div>
+
+        {/* Cert Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setCertDropdownOpen(!certDropdownOpen);
+              setModelDropdownOpen(false);
+            }}
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg
+                       bg-white/5 hover:bg-white/10 text-xs transition-colors"
+          >
+            <span className="truncate">
+              {currentProfile?.name ?? "Loading..."}
             </span>
-          </div>
+            <ChevronDown
+              className={`w-3.5 h-3.5 shrink-0 transition-transform ${certDropdownOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {certDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-sidebar-hover rounded-lg
+                           border border-white/10 shadow-xl z-50 overflow-hidden">
+              {profiles.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setCertId(p.id);
+                    setCertDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                    p.id === currentCertId
+                      ? "bg-sidebar-active text-white"
+                      : "hover:bg-white/5"
+                  }`}
+                >
+                  <div className="font-medium">{p.name}</div>
+                  <div className="opacity-50 text-[10px]">{p.fullName}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Model Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setModelDropdownOpen(!modelDropdownOpen);
+              setCertDropdownOpen(false);
+            }}
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg
+                       bg-white/5 hover:bg-white/10 text-xs transition-colors"
+          >
+            <span className="flex items-center gap-1.5 truncate">
+              <Cpu className="w-3 h-3 opacity-50" />
+              {currentModel?.name ?? "Loading..."}
+            </span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 shrink-0 transition-transform ${modelDropdownOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {modelDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-sidebar-hover rounded-lg
+                           border border-white/10 shadow-xl z-50 overflow-hidden max-h-64 overflow-y-auto">
+              {models.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => {
+                    setModelId(m.id);
+                    setModelDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                    m.id === activeModelId
+                      ? "bg-sidebar-active text-white"
+                      : "hover:bg-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium">{m.name}</span>
+                    {m.vision && <Eye className="w-3 h-3 opacity-50" />}
+                  </div>
+                  <div className="opacity-50 text-[10px]">
+                    {m.provider} · {m.inputCost} in / {m.outputCost} out
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -141,60 +262,62 @@ export default function Sidebar() {
       </div>
 
       {/* Domain Progress */}
-      <div className="border-t border-white/10 p-3">
-        <span className="text-[10px] font-medium uppercase opacity-50">
-          Exam Domains
-        </span>
-        <div className="mt-2 space-y-2">
-          {DOMAINS.map((domain) => {
-            const progress = domainProgress.find(
-              (d) => d.domainId === domain.id,
-            );
-            const conf = progress?.confidence ?? "not_started";
-            return (
-              <button
-                key={domain.id}
-                onClick={() => {
-                  const next =
-                    conf === "not_started"
-                      ? "learning"
-                      : conf === "learning"
-                        ? "confident"
-                        : "not_started";
-                  updateDomainProgress(domain.id, next);
-                }}
-                className="w-full text-left group"
-                title={`Click to cycle: ${CONFIDENCE_LABELS[conf]}`}
-              >
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="truncate">{domain.name}</span>
-                  <span className="text-[10px] opacity-50 ml-1">
-                    {domain.weight}%
-                  </span>
-                </div>
-                <div className="mt-0.5 flex items-center gap-1.5">
-                  <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-300 ${CONFIDENCE_COLORS[conf]}`}
-                      style={{
-                        width:
-                          conf === "not_started"
-                            ? "0%"
-                            : conf === "learning"
-                              ? "50%"
-                              : "100%",
-                      }}
-                    />
+      {currentCertId !== "common" && domains.length > 0 && (
+        <div className="border-t border-white/10 p-3">
+          <span className="text-[10px] font-medium uppercase opacity-50">
+            Exam Domains
+          </span>
+          <div className="mt-2 space-y-2">
+            {domains.map((domain) => {
+              const progress = domainProgress.find(
+                (d) => d.domainId === domain.id,
+              );
+              const conf = progress?.confidence ?? "not_started";
+              return (
+                <button
+                  key={domain.id}
+                  onClick={() => {
+                    const next =
+                      conf === "not_started"
+                        ? "learning"
+                        : conf === "learning"
+                          ? "confident"
+                          : "not_started";
+                    updateDomainProgress(domain.id, next);
+                  }}
+                  className="w-full text-left group"
+                  title={`Click to cycle: ${CONFIDENCE_LABELS[conf]}`}
+                >
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="truncate">{domain.name}</span>
+                    <span className="text-[10px] opacity-50 ml-1">
+                      {domain.weight}%
+                    </span>
                   </div>
-                  <span className="text-[9px] opacity-40 w-14 text-right">
-                    {CONFIDENCE_LABELS[conf]}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
+                  <div className="mt-0.5 flex items-center gap-1.5">
+                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${CONFIDENCE_COLORS[conf]}`}
+                        style={{
+                          width:
+                            conf === "not_started"
+                              ? "0%"
+                              : conf === "learning"
+                                ? "50%"
+                                : "100%",
+                        }}
+                      />
+                    </div>
+                    <span className="text-[9px] opacity-40 w-14 text-right">
+                      {CONFIDENCE_LABELS[conf]}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 }

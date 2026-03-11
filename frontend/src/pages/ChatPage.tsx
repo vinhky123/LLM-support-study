@@ -3,14 +3,16 @@ import ChatWindow from "../components/chat/ChatWindow";
 import ChatInput from "../components/chat/ChatInput";
 import QuickPrompts from "../components/chat/QuickPrompts";
 import { useChatStore } from "../stores/chatStore";
-import { sendChatMessage, getQuickPrompts } from "../services/api";
-import type { ImageData, QuickPrompt } from "../types";
+import { sendChatMessage, getQuickPrompts, getProfiles } from "../services/api";
+import type { ImageData, QuickPrompt, CertProfile } from "../types";
 
 export default function ChatPage() {
   const [quickPrompts, setQuickPrompts] = useState<QuickPrompt[]>([]);
+  const [profiles, setProfiles] = useState<CertProfile[]>([]);
   const {
     getCurrentSession,
     currentSessionId,
+    currentCertId,
     createSession,
     addMessage,
     updateLastAssistantMessage,
@@ -19,12 +21,17 @@ export default function ChatPage() {
   } = useChatStore();
 
   const session = getCurrentSession();
+  const currentProfile = profiles.find((p) => p.id === currentCertId);
 
   useEffect(() => {
-    getQuickPrompts()
+    getProfiles().then(setProfiles).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    getQuickPrompts(currentCertId)
       .then(setQuickPrompts)
       .catch(() => {});
-  }, []);
+  }, [currentCertId]);
 
   const handleSend = useCallback(
     async (message: string, image?: ImageData) => {
@@ -38,13 +45,18 @@ export default function ChatPage() {
       setLoading(true);
 
       try {
-        const currentMessages =
-          useChatStore.getState().getCurrentSession()?.messages ?? [];
+        const state = useChatStore.getState();
+        const currentMessages = state.getCurrentSession()?.messages ?? [];
         const history = currentMessages.slice(0, -1);
 
-        await sendChatMessage(history, message, image, (partial) => {
-          updateLastAssistantMessage(partial);
-        });
+        await sendChatMessage(
+          history,
+          message,
+          image,
+          (partial) => updateLastAssistantMessage(partial),
+          state.currentCertId,
+          state.currentModelId,
+        );
       } catch (err) {
         updateLastAssistantMessage(
           `**Error:** ${err instanceof Error ? err.message : "Something went wrong. Please check your API key and try again."}`,
@@ -83,12 +95,15 @@ export default function ChatPage() {
             {session?.name ?? "New Chat"}
           </h2>
           <p className="text-xs text-text-secondary">
-            AWS Data Engineer Associate (DEA-C01)
+            {currentProfile?.fullName ?? "AWS Cloud Study"}
           </p>
         </div>
       </div>
 
-      <ChatWindow messages={session?.messages ?? []} />
+      <ChatWindow
+        messages={session?.messages ?? []}
+        certName={currentProfile?.fullName}
+      />
 
       {/* Quick Prompts */}
       {(!session || session.messages.length === 0) && quickPrompts.length > 0 && (

@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from services.llm_service import chat_stream
 from prompts.system_prompts import get_prompt
 from prompts.cert_profiles import get_profile, get_all_profiles_summary
+from config import AVAILABLE_MODELS, DEFAULT_MODEL
 
 router = APIRouter()
 
@@ -25,6 +26,7 @@ class ChatRequest(BaseModel):
     message: str
     image: ImageData | None = None
     certId: str = "common"
+    model: str = ""
 
 
 @router.post("/message")
@@ -40,6 +42,7 @@ async def send_message(request: ChatRequest):
                 request.message,
                 image,
                 system_instruction=system_instruction,
+                model=request.model,
             ):
                 yield f"data: {json.dumps({'text': chunk})}\n\n"
             yield "data: [DONE]\n\n"
@@ -70,3 +73,8 @@ async def get_domains(certId: str = "common"):
 async def get_quiz_topics(certId: str = "common"):
     profile = get_profile(certId)
     return profile["suggestedQuizTopics"]
+
+
+@router.get("/models")
+async def list_models():
+    return {"models": AVAILABLE_MODELS, "default": DEFAULT_MODEL}

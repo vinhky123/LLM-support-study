@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BrainCircuit,
   Loader2,
@@ -9,7 +9,8 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
-import { generateQuizFromTopic } from "../services/api";
+import { generateQuizFromTopic, getQuizTopics } from "../services/api";
+import { useChatStore } from "../stores/chatStore";
 import type { QuizQuestion } from "../types";
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -17,21 +18,19 @@ const DOMAIN_COLORS: Record<string, string> = {
   store: "bg-green-100 text-green-700 border-green-200",
   operations: "bg-purple-100 text-purple-700 border-purple-200",
   security: "bg-orange-100 text-orange-700 border-orange-200",
+  secure: "bg-blue-100 text-blue-700 border-blue-200",
+  resilient: "bg-green-100 text-green-700 border-green-200",
+  performing: "bg-purple-100 text-purple-700 border-purple-200",
+  cost: "bg-orange-100 text-orange-700 border-orange-200",
+  complexity: "bg-blue-100 text-blue-700 border-blue-200",
+  new_solutions: "bg-green-100 text-green-700 border-green-200",
+  migration: "bg-purple-100 text-purple-700 border-purple-200",
+  cost_perf: "bg-orange-100 text-orange-700 border-orange-200",
 };
-
-const SUGGESTED_TOPICS = [
-  "AWS Glue ETL",
-  "Amazon Kinesis vs MSK",
-  "Amazon S3 Storage Classes",
-  "Amazon Redshift",
-  "AWS Lake Formation",
-  "Data Pipeline Orchestration",
-  "AWS KMS Encryption",
-  "Amazon DynamoDB",
-];
 
 export default function QuizPage() {
   const [topic, setTopic] = useState("");
+  const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -40,6 +39,13 @@ export default function QuizPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [quizStarted, setQuizStarted] = useState(false);
+  const { currentCertId, currentModelId } = useChatStore();
+
+  useEffect(() => {
+    getQuizTopics(currentCertId)
+      .then(setSuggestedTopics)
+      .catch(() => {});
+  }, [currentCertId]);
 
   const handleGenerateQuiz = async (t?: string) => {
     const selectedTopic = t || topic;
@@ -47,7 +53,7 @@ export default function QuizPage() {
     setLoading(true);
     setError("");
     try {
-      const result = await generateQuizFromTopic(selectedTopic, 5);
+      const result = await generateQuizFromTopic(selectedTopic, 5, currentCertId, currentModelId);
       setQuestions(result);
       setCurrentIdx(0);
       setSelectedAnswer(null);
@@ -55,9 +61,7 @@ export default function QuizPage() {
       setScore({ correct: 0, total: 0 });
       setQuizStarted(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to generate quiz",
-      );
+      setError(err instanceof Error ? err.message : "Failed to generate quiz");
     } finally {
       setLoading(false);
     }
@@ -99,7 +103,6 @@ export default function QuizPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="px-6 py-3 bg-white border-b border-border">
         <div className="flex items-center justify-between">
           <div>
@@ -108,7 +111,7 @@ export default function QuizPage() {
               Quiz Mode
             </h2>
             <p className="text-xs text-text-secondary">
-              Luyện tập câu hỏi trắc nghiệm theo format DEA-C01
+              Luyện tập câu hỏi trắc nghiệm theo format exam
             </p>
           </div>
           {quizStarted && (
@@ -138,7 +141,6 @@ export default function QuizPage() {
         )}
 
         {!quizStarted ? (
-          /* Topic Selection */
           <div className="max-w-xl mx-auto">
             <div className="text-center mb-8">
               <BrainCircuit className="w-12 h-12 text-primary mx-auto mb-3" />
@@ -175,7 +177,7 @@ export default function QuizPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {SUGGESTED_TOPICS.map((t) => (
+              {suggestedTopics.map((t) => (
                 <button
                   key={t}
                   onClick={() => {
@@ -194,21 +196,13 @@ export default function QuizPage() {
           </div>
         ) : loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-              <p className="text-sm text-text-secondary">
-                Đang tạo câu hỏi...
-              </p>
-            </div>
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : isFinished ? (
-          /* Results */
           <div className="max-w-md mx-auto text-center py-8">
             <div
               className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center ${
-                score.correct / score.total >= 0.7
-                  ? "bg-green-100"
-                  : "bg-orange-100"
+                score.correct / score.total >= 0.7 ? "bg-green-100" : "bg-orange-100"
               }`}
             >
               <span className="text-2xl font-bold">
@@ -218,41 +212,31 @@ export default function QuizPage() {
             <h3 className="text-lg font-bold mb-1">Quiz Complete!</h3>
             <p className="text-sm text-text-secondary mb-6">
               {score.correct}/{score.total} correct
-              {score.correct / score.total >= 0.7
-                ? " — Great job!"
-                : " — Keep studying!"}
+              {score.correct / score.total >= 0.7 ? " — Great job!" : " — Keep studying!"}
             </p>
             <button
               onClick={handleRestart}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
-                         bg-primary text-white text-sm font-medium
-                         hover:bg-primary-hover transition-colors"
+                         bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
               Try Another Topic
             </button>
           </div>
         ) : (
-          /* Quiz Question */
           <div className="max-w-2xl mx-auto">
-            {/* Progress */}
             <div className="flex items-center gap-2 mb-4">
               {questions.map((_, idx) => (
                 <div
                   key={idx}
                   className={`h-1.5 flex-1 rounded-full transition-colors ${
-                    idx < currentIdx
-                      ? "bg-primary"
-                      : idx === currentIdx
-                        ? "bg-primary/50"
-                        : "bg-border"
+                    idx < currentIdx ? "bg-primary" : idx === currentIdx ? "bg-primary/50" : "bg-border"
                   }`}
                 />
               ))}
             </div>
 
             <div className="bg-white rounded-2xl border border-border shadow-sm p-6">
-              {/* Domain tag */}
               {questions[currentIdx]?.domain && (
                 <span
                   className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-3 border ${
@@ -270,26 +254,20 @@ export default function QuizPage() {
               <div className="space-y-2">
                 {questions[currentIdx].options.map((option, idx) => {
                   const isSelected = selectedAnswer === idx;
-                  const isCorrect =
-                    idx === questions[currentIdx].correctAnswer;
+                  const isCorrect = idx === questions[currentIdx].correctAnswer;
                   const showResult = selectedAnswer !== null;
 
-                  let style =
-                    "border-border hover:border-primary/40 hover:bg-primary-light/30";
-                  if (showResult && isCorrect)
-                    style = "border-green-400 bg-green-50";
-                  else if (showResult && isSelected && !isCorrect)
-                    style = "border-red-400 bg-red-50";
-                  else if (isSelected)
-                    style = "border-primary bg-primary-light";
+                  let style = "border-border hover:border-primary/40 hover:bg-primary-light/30";
+                  if (showResult && isCorrect) style = "border-green-400 bg-green-50";
+                  else if (showResult && isSelected && !isCorrect) style = "border-red-400 bg-red-50";
+                  else if (isSelected) style = "border-primary bg-primary-light";
 
                   return (
                     <button
                       key={idx}
                       onClick={() => handleSelectAnswer(idx)}
                       disabled={selectedAnswer !== null}
-                      className={`w-full text-left px-4 py-3 rounded-xl border text-sm
-                                 transition-colors flex items-center gap-3 ${style}`}
+                      className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-colors flex items-center gap-3 ${style}`}
                     >
                       <span className="shrink-0">
                         {showResult && isCorrect ? (
@@ -310,9 +288,7 @@ export default function QuizPage() {
 
               {showExplanation && (
                 <div className="mt-5 p-4 rounded-xl bg-surface-alt border border-border">
-                  <h4 className="text-xs font-semibold text-primary mb-1">
-                    Explanation
-                  </h4>
+                  <h4 className="text-xs font-semibold text-primary mb-1">Explanation</h4>
                   <p className="text-sm text-text-secondary leading-relaxed">
                     {questions[currentIdx].explanation}
                   </p>
@@ -324,8 +300,7 @@ export default function QuizPage() {
                   <button
                     onClick={handleNext}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl
-                               bg-primary text-white text-sm font-medium
-                               hover:bg-primary-hover transition-colors"
+                               bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
                   >
                     Next
                     <ChevronRight className="w-4 h-4" />
