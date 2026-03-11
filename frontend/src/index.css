@@ -22,27 +22,27 @@
   --color-aws-orange: #ff9900;
 }
 
-/* ─── Dark mode overrides (Cursor-like low-contrast palette) ─── */
+/* ─── Dark mode overrides (neutral gray-black, VS Code style) ─── */
 .dark {
-  --color-primary: #7aa2f7;
-  --color-primary-hover: #89b4fa;
-  --color-primary-light: #1a2744;
-  --color-surface: #1e1e2e;
-  --color-surface-alt: #181825;
-  --color-surface-hover: #2a2d3e;
-  --color-sidebar: #11111b;
-  --color-sidebar-hover: #1e1e2e;
-  --color-sidebar-active: #1a2744;
-  --color-text: #cdd6f4;
-  --color-text-secondary: #6e6c7e;
-  --color-text-sidebar: #a6adc8;
-  --color-text-sidebar-active: #cdd6f4;
-  --color-border: #313244;
-  --color-success: #a6e3a1;
-  --color-warning: #f9e2af;
-  --color-danger: #f38ba8;
-  --color-info: #89dceb;
-  --color-aws-orange: #fab387;
+  --color-primary: #4d9eff;
+  --color-primary-hover: #60aaff;
+  --color-primary-light: #172336;
+  --color-surface: #1e1e1e;
+  --color-surface-alt: #181818;
+  --color-surface-hover: #2a2a2a;
+  --color-sidebar: #111111;
+  --color-sidebar-hover: #1e1e1e;
+  --color-sidebar-active: #1a2d4a;
+  --color-text: #d4d4d4;
+  --color-text-secondary: #888888;
+  --color-text-sidebar: #9d9d9d;
+  --color-text-sidebar-active: #d4d4d4;
+  --color-border: #333333;
+  --color-success: #89d185;
+  --color-warning: #ddb86c;
+  --color-danger: #f14c4c;
+  --color-info: #75beff;
+  --color-aws-orange: #e8964d;
 }
 
 body {
