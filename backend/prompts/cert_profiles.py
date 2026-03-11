@@ -46,11 +46,7 @@ CERT_PROFILES = {
             "AWS CloudFormation",
             "Amazon CloudWatch",
         ],
-        "systemPromptContext": (
-            "You are a general AWS cloud study assistant. "
-            "Help the student understand any AWS service, architecture pattern, or best practice. "
-            "No specific certification focus — cover broad AWS knowledge."
-        ),
+        "systemPromptContext": "General AWS — no specific cert focus.",
     },
     "dea-c01": {
         "id": "dea-c01",
@@ -145,14 +141,7 @@ CERT_PROFILES = {
             "AWS KMS Encryption",
             "Amazon DynamoDB",
         ],
-        "systemPromptContext": (
-            "You are helping a student prepare for the AWS DEA-C01 (Data Engineer Associate) certification exam.\n"
-            "Focus on data engineering concepts and always relate explanations to the 4 exam domains:\n"
-            "1. Data Ingestion and Transformation (34% weight)\n"
-            "2. Data Store Management (26% weight)\n"
-            "3. Data Operations and Support (22% weight)\n"
-            "4. Data Security and Governance (18% weight)"
-        ),
+        "systemPromptContext": "Cert: DEA-C01. Domains: Ingestion 34%, Store 26%, Operations 22%, Security 18%.",
     },
     "saa-c03": {
         "id": "saa-c03",
@@ -251,15 +240,7 @@ CERT_PROFILES = {
             "Disaster Recovery on AWS",
             "Serverless Architecture",
         ],
-        "systemPromptContext": (
-            "You are helping a student prepare for the AWS SAA-C03 (Solutions Architect Associate) certification exam.\n"
-            "Focus on architecture design, best practices, and the Well-Architected Framework.\n"
-            "Always relate explanations to the 4 exam domains:\n"
-            "1. Design Secure Architectures (30% weight)\n"
-            "2. Design Resilient Architectures (26% weight)\n"
-            "3. Design High-Performing Architectures (24% weight)\n"
-            "4. Design Cost-Optimized Architectures (20% weight)"
-        ),
+        "systemPromptContext": "Cert: SAA-C03. Domains: Secure 30%, Resilient 26%, High-Performing 24%, Cost-Optimized 20%.",
     },
     "sap-c02": {
         "id": "sap-c02",
@@ -357,15 +338,7 @@ CERT_PROFILES = {
             "Cost Optimization at Scale",
             "Network Design (Transit Gateway, Direct Connect)",
         ],
-        "systemPromptContext": (
-            "You are helping a student prepare for the AWS SAP-C02 (Solutions Architect Professional) certification exam.\n"
-            "This is an advanced exam — focus on complex, multi-service architectures and enterprise-level decisions.\n"
-            "Always relate explanations to the 4 exam domains:\n"
-            "1. Design for Organizational Complexity (26% weight)\n"
-            "2. Design for New Solutions (29% weight)\n"
-            "3. Migration Planning (25% weight)\n"
-            "4. Cost Control & Performance Optimization (20% weight)"
-        ),
+        "systemPromptContext": "Cert: SAP-C02 (Professional). Domains: Complexity 26%, New Solutions 29%, Migration 25%, Cost/Perf 20%.",
     },
 }
 
