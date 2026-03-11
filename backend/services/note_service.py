@@ -1,28 +1,27 @@
 from services.llm_service import generate_text, generate_json
-from prompts.system_prompts import (
-    NOTE_GENERATION,
-    FLASHCARD_GENERATION,
-    SUMMARY_GENERATION,
-)
+from prompts.system_prompts import get_prompt
 
 
-def generate_notes_from_conversation(messages: list[dict]) -> str:
+def generate_notes_from_conversation(messages: list[dict], cert_id: str = "common") -> str:
     """Generate structured study notes from a conversation."""
     conversation_text = _format_conversation(messages)
     prompt = f"Here is the conversation to summarize into study notes:\n\n{conversation_text}"
-    return generate_text(prompt, NOTE_GENERATION)
+    system_instruction = get_prompt("note_generation", cert_id)
+    return generate_text(prompt, system_instruction)
 
 
-def generate_flashcards_from_notes(notes_content: str) -> list[dict]:
+def generate_flashcards_from_notes(notes_content: str, cert_id: str = "common") -> list[dict]:
     """Parse notes into flashcard Q&A pairs."""
     prompt = f"Generate flashcards from these study notes:\n\n{notes_content}"
-    return generate_json(prompt, FLASHCARD_GENERATION)
+    system_instruction = get_prompt("flashcard_generation", cert_id)
+    return generate_json(prompt, system_instruction)
 
 
-def generate_summary_from_notes(notes_content: str) -> list[dict]:
+def generate_summary_from_notes(notes_content: str, cert_id: str = "common") -> list[dict]:
     """Generate a domain-organized summary from notes."""
     prompt = f"Generate a structured summary from these study notes:\n\n{notes_content}"
-    return generate_json(prompt, SUMMARY_GENERATION)
+    system_instruction = get_prompt("summary_generation", cert_id)
+    return generate_json(prompt, system_instruction)
 
 
 def _format_conversation(messages: list[dict]) -> str:

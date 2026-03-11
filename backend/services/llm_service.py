@@ -3,7 +3,6 @@ import json
 from google import genai
 from google.genai import types
 from config import GEMINI_API_KEY, GEMINI_MODEL
-from prompts.system_prompts import STUDY_ASSISTANT
 
 _client: genai.Client | None = None
 
@@ -43,7 +42,12 @@ def _build_history(messages: list[dict]) -> list[types.Content]:
     return history
 
 
-def chat_stream(messages: list[dict], user_message: str, image: dict | None = None):
+def chat_stream(
+    messages: list[dict],
+    user_message: str,
+    image: dict | None = None,
+    system_instruction: str = "",
+):
     """Stream chat response from Gemini. Yields text chunks."""
     client = _get_client()
     history = _build_history(messages)
@@ -51,7 +55,7 @@ def chat_stream(messages: list[dict], user_message: str, image: dict | None = No
     chat = client.chats.create(
         model=GEMINI_MODEL,
         config=types.GenerateContentConfig(
-            system_instruction=STUDY_ASSISTANT,
+            system_instruction=system_instruction,
         ),
         history=history,
     )

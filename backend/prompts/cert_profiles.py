@@ -1,0 +1,381 @@
+CERT_PROFILES = {
+    "common": {
+        "id": "common",
+        "name": "AWS General",
+        "fullName": "AWS Cloud (General)",
+        "domains": [],
+        "quickPrompts": [
+            {
+                "id": "explain",
+                "label": "Giải thích",
+                "icon": "BookOpen",
+                "template": "Giải thích chi tiết về {topic} trong AWS. Bao gồm: định nghĩa, cách hoạt động, use cases chính.",
+            },
+            {
+                "id": "compare",
+                "label": "So sánh",
+                "icon": "GitCompare",
+                "template": "So sánh {topicA} và {topicB} trong AWS. Dùng bảng so sánh với các tiêu chí: mục đích, use case, hiệu suất, chi phí.",
+            },
+            {
+                "id": "when_to_use",
+                "label": "Khi nào dùng?",
+                "icon": "HelpCircle",
+                "template": "Khi nào nên sử dụng {service} trong AWS? Liệt kê các scenarios phù hợp và không phù hợp.",
+            },
+            {
+                "id": "example",
+                "label": "Ví dụ thực tế",
+                "icon": "Lightbulb",
+                "template": "Cho ví dụ thực tế về kiến trúc sử dụng {topic} trên AWS. Vẽ flow bằng text và giải thích từng bước.",
+            },
+            {
+                "id": "practice",
+                "label": "Câu hỏi mẫu",
+                "icon": "FileQuestion",
+                "template": "Tạo 3 câu hỏi trắc nghiệm mẫu về {topic} trong AWS. Mỗi câu có 4 đáp án (A-D) và giải thích chi tiết.",
+            },
+        ],
+        "suggestedQuizTopics": [
+            "AWS EC2 Instance Types",
+            "Amazon S3 Storage Classes",
+            "AWS IAM Policies",
+            "Amazon VPC Networking",
+            "AWS Lambda",
+            "Amazon RDS vs DynamoDB",
+            "AWS CloudFormation",
+            "Amazon CloudWatch",
+        ],
+        "systemPromptContext": (
+            "You are a general AWS cloud study assistant. "
+            "Help the student understand any AWS service, architecture pattern, or best practice. "
+            "No specific certification focus — cover broad AWS knowledge."
+        ),
+    },
+    "dea-c01": {
+        "id": "dea-c01",
+        "name": "AWS DEA-C01",
+        "fullName": "AWS Data Engineer Associate",
+        "domains": [
+            {
+                "id": "ingestion",
+                "name": "Data Ingestion and Transformation",
+                "weight": 34,
+                "topics": [
+                    "AWS Glue", "AWS Glue DataBrew", "Amazon Kinesis Data Streams",
+                    "Amazon Kinesis Data Firehose", "Amazon MSK", "AWS Lambda",
+                    "Amazon EMR", "AWS Step Functions", "Amazon AppFlow",
+                    "AWS DMS", "AWS DataSync", "Apache Spark on EMR",
+                ],
+            },
+            {
+                "id": "store",
+                "name": "Data Store Management",
+                "weight": 26,
+                "topics": [
+                    "Amazon S3", "S3 Storage Classes", "Amazon RDS",
+                    "Amazon Aurora", "Amazon DynamoDB", "Amazon Redshift",
+                    "Amazon ElastiCache", "Amazon OpenSearch Service",
+                    "AWS Lake Formation", "Amazon Keyspaces",
+                    "Data Lake architecture", "Data Warehouse vs Data Lake",
+                ],
+            },
+            {
+                "id": "operations",
+                "name": "Data Operations and Support",
+                "weight": 22,
+                "topics": [
+                    "Amazon CloudWatch", "AWS CloudTrail", "Amazon EventBridge",
+                    "AWS Systems Manager", "Amazon MWAA (Airflow)",
+                    "AWS Glue Workflows", "Amazon SNS", "Amazon SQS",
+                    "CI/CD for data pipelines", "Monitoring and alerting",
+                ],
+            },
+            {
+                "id": "security",
+                "name": "Data Security and Governance",
+                "weight": 18,
+                "topics": [
+                    "AWS IAM", "AWS KMS", "AWS Lake Formation permissions",
+                    "Amazon Macie", "AWS Glue Data Catalog",
+                    "VPC endpoints", "Encryption at rest and in transit",
+                    "Data masking", "Cross-account access", "Resource policies",
+                ],
+            },
+        ],
+        "quickPrompts": [
+            {
+                "id": "explain",
+                "label": "Giải thích",
+                "icon": "BookOpen",
+                "template": "Giải thích chi tiết về {topic} trong AWS Data Engineering. Bao gồm: định nghĩa, cách hoạt động, use cases chính, và exam tips cho DEA-C01.",
+            },
+            {
+                "id": "compare",
+                "label": "So sánh",
+                "icon": "GitCompare",
+                "template": "So sánh {topicA} và {topicB} trong AWS. Dùng bảng so sánh với các tiêu chí: mục đích, use case, hiệu suất, chi phí, và khi nào dùng cái nào trong đề thi DEA-C01.",
+            },
+            {
+                "id": "when_to_use",
+                "label": "Khi nào dùng?",
+                "icon": "HelpCircle",
+                "template": "Khi nào nên sử dụng {service} trong AWS? Liệt kê các scenarios phù hợp và không phù hợp. Đặc biệt lưu ý các tình huống hay gặp trong đề thi DEA-C01.",
+            },
+            {
+                "id": "example",
+                "label": "Ví dụ thực tế",
+                "icon": "Lightbulb",
+                "template": "Cho ví dụ thực tế về kiến trúc data pipeline sử dụng {topic} trên AWS. Vẽ flow bằng text và giải thích từng bước.",
+            },
+            {
+                "id": "practice",
+                "label": "Câu hỏi mẫu",
+                "icon": "FileQuestion",
+                "template": "Tạo 3 câu hỏi trắc nghiệm mẫu về {topic} theo format đề thi AWS DEA-C01. Mỗi câu có 4 đáp án (A-D) và giải thích chi tiết đáp án đúng/sai.",
+            },
+        ],
+        "suggestedQuizTopics": [
+            "AWS Glue ETL",
+            "Amazon Kinesis vs MSK",
+            "Amazon S3 Storage Classes",
+            "Amazon Redshift",
+            "AWS Lake Formation",
+            "Data Pipeline Orchestration",
+            "AWS KMS Encryption",
+            "Amazon DynamoDB",
+        ],
+        "systemPromptContext": (
+            "You are helping a student prepare for the AWS DEA-C01 (Data Engineer Associate) certification exam.\n"
+            "Focus on data engineering concepts and always relate explanations to the 4 exam domains:\n"
+            "1. Data Ingestion and Transformation (34% weight)\n"
+            "2. Data Store Management (26% weight)\n"
+            "3. Data Operations and Support (22% weight)\n"
+            "4. Data Security and Governance (18% weight)"
+        ),
+    },
+    "saa-c03": {
+        "id": "saa-c03",
+        "name": "AWS SAA-C03",
+        "fullName": "AWS Solutions Architect Associate",
+        "domains": [
+            {
+                "id": "secure",
+                "name": "Design Secure Architectures",
+                "weight": 30,
+                "topics": [
+                    "AWS IAM", "AWS Organizations", "AWS STS",
+                    "Amazon Cognito", "AWS Directory Service",
+                    "Security Groups vs NACLs", "AWS WAF & Shield",
+                    "AWS KMS", "AWS Certificate Manager",
+                    "VPC design", "Private/Public subnets",
+                ],
+            },
+            {
+                "id": "resilient",
+                "name": "Design Resilient Architectures",
+                "weight": 26,
+                "topics": [
+                    "Multi-AZ deployments", "Auto Scaling",
+                    "Elastic Load Balancing (ALB/NLB/GWLB)",
+                    "Amazon SQS decoupling", "Amazon Route 53 routing policies",
+                    "Disaster recovery strategies", "RDS Multi-AZ vs Read Replicas",
+                    "S3 replication", "AWS Backup",
+                    "Loosely coupled architectures",
+                ],
+            },
+            {
+                "id": "performing",
+                "name": "Design High-Performing Architectures",
+                "weight": 24,
+                "topics": [
+                    "Amazon EC2 instance types", "EBS volume types",
+                    "Amazon EFS vs FSx", "Amazon ElastiCache",
+                    "Amazon CloudFront", "AWS Global Accelerator",
+                    "Amazon Aurora", "Amazon DynamoDB",
+                    "AWS Lambda", "Amazon API Gateway",
+                ],
+            },
+            {
+                "id": "cost",
+                "name": "Design Cost-Optimized Architectures",
+                "weight": 20,
+                "topics": [
+                    "EC2 pricing models (On-Demand, Reserved, Spot, Savings Plans)",
+                    "S3 storage classes & lifecycle policies",
+                    "AWS Cost Explorer", "AWS Budgets",
+                    "Right-sizing", "AWS Trusted Advisor",
+                    "Data transfer costs", "Serverless cost optimization",
+                ],
+            },
+        ],
+        "quickPrompts": [
+            {
+                "id": "explain",
+                "label": "Giải thích",
+                "icon": "BookOpen",
+                "template": "Giải thích chi tiết về {topic} trong AWS Solutions Architecture. Bao gồm: định nghĩa, cách hoạt động, use cases chính, và exam tips cho SAA-C03.",
+            },
+            {
+                "id": "compare",
+                "label": "So sánh",
+                "icon": "GitCompare",
+                "template": "So sánh {topicA} và {topicB} trong AWS. Dùng bảng so sánh với các tiêu chí: mục đích, use case, hiệu suất, chi phí, và khi nào dùng cái nào trong đề thi SAA-C03.",
+            },
+            {
+                "id": "when_to_use",
+                "label": "Khi nào dùng?",
+                "icon": "HelpCircle",
+                "template": "Khi nào nên sử dụng {service} trong AWS? Liệt kê các scenarios phù hợp và không phù hợp. Đặc biệt lưu ý các tình huống hay gặp trong đề thi SAA-C03.",
+            },
+            {
+                "id": "architecture",
+                "label": "Thiết kế kiến trúc",
+                "icon": "Lightbulb",
+                "template": "Thiết kế kiến trúc AWS cho bài toán: {topic}. Vẽ architecture diagram bằng text, giải thích từng component và lý do chọn.",
+            },
+            {
+                "id": "practice",
+                "label": "Câu hỏi mẫu",
+                "icon": "FileQuestion",
+                "template": "Tạo 3 câu hỏi trắc nghiệm mẫu về {topic} theo format đề thi AWS SAA-C03. Mỗi câu có 4 đáp án (A-D) và giải thích chi tiết đáp án đúng/sai.",
+            },
+        ],
+        "suggestedQuizTopics": [
+            "EC2 Instance Types & Pricing",
+            "S3 Storage Classes",
+            "VPC & Networking",
+            "ALB vs NLB vs GWLB",
+            "Auto Scaling Strategies",
+            "RDS Multi-AZ vs Read Replicas",
+            "Disaster Recovery on AWS",
+            "Serverless Architecture",
+        ],
+        "systemPromptContext": (
+            "You are helping a student prepare for the AWS SAA-C03 (Solutions Architect Associate) certification exam.\n"
+            "Focus on architecture design, best practices, and the Well-Architected Framework.\n"
+            "Always relate explanations to the 4 exam domains:\n"
+            "1. Design Secure Architectures (30% weight)\n"
+            "2. Design Resilient Architectures (26% weight)\n"
+            "3. Design High-Performing Architectures (24% weight)\n"
+            "4. Design Cost-Optimized Architectures (20% weight)"
+        ),
+    },
+    "sap-c02": {
+        "id": "sap-c02",
+        "name": "AWS SAP-C02",
+        "fullName": "AWS Solutions Architect Professional",
+        "domains": [
+            {
+                "id": "complexity",
+                "name": "Design for Organizational Complexity",
+                "weight": 26,
+                "topics": [
+                    "AWS Organizations", "Service Control Policies (SCPs)",
+                    "Multi-account strategies", "AWS Control Tower",
+                    "Cross-account access", "AWS RAM",
+                    "Hybrid connectivity (Direct Connect, VPN)",
+                    "Transit Gateway", "Network design patterns",
+                ],
+            },
+            {
+                "id": "new_solutions",
+                "name": "Design for New Solutions",
+                "weight": 29,
+                "topics": [
+                    "Microservices architecture", "Event-driven architecture",
+                    "Serverless patterns", "Container orchestration (ECS/EKS)",
+                    "Data lakes & analytics", "Machine learning pipelines",
+                    "IoT architectures", "Real-time processing",
+                    "API design patterns", "Decoupling strategies",
+                ],
+            },
+            {
+                "id": "migration",
+                "name": "Migration Planning",
+                "weight": 25,
+                "topics": [
+                    "AWS Migration Hub", "AWS Application Discovery Service",
+                    "6R migration strategies", "AWS DMS",
+                    "AWS Snow Family", "VMware Cloud on AWS",
+                    "Database migration strategies",
+                    "Large-scale data transfer", "Application modernization",
+                ],
+            },
+            {
+                "id": "cost_perf",
+                "name": "Cost Control & Performance Optimization",
+                "weight": 20,
+                "topics": [
+                    "AWS Cost Explorer & Budgets", "Reserved Instances & Savings Plans",
+                    "Performance monitoring & optimization",
+                    "Caching strategies", "CDN optimization",
+                    "Database performance tuning",
+                    "Compute right-sizing", "Storage tiering",
+                ],
+            },
+        ],
+        "quickPrompts": [
+            {
+                "id": "explain",
+                "label": "Giải thích",
+                "icon": "BookOpen",
+                "template": "Giải thích chi tiết về {topic} ở mức professional-level AWS. Bao gồm: deep-dive, trade-offs, và exam tips cho SAP-C02.",
+            },
+            {
+                "id": "compare",
+                "label": "So sánh",
+                "icon": "GitCompare",
+                "template": "So sánh {topicA} và {topicB} trong AWS ở mức professional. Phân tích trade-offs, edge cases, và khi nào chọn cái nào trong đề thi SAP-C02.",
+            },
+            {
+                "id": "scenario",
+                "label": "Scenario Analysis",
+                "icon": "HelpCircle",
+                "template": "Phân tích scenario sau ở mức professional: {topic}. Đưa ra kiến trúc tối ưu, giải thích trade-offs, và lưu ý cho đề thi SAP-C02.",
+            },
+            {
+                "id": "architecture",
+                "label": "Thiết kế kiến trúc",
+                "icon": "Lightbulb",
+                "template": "Thiết kế kiến trúc enterprise-grade AWS cho: {topic}. Bao gồm multi-account strategy, security, HA, DR, và cost optimization.",
+            },
+            {
+                "id": "practice",
+                "label": "Câu hỏi mẫu",
+                "icon": "FileQuestion",
+                "template": "Tạo 3 câu hỏi trắc nghiệm mẫu professional-level về {topic} theo format đề thi AWS SAP-C02. Scenario dài, 4-5 đáp án, giải thích chi tiết.",
+            },
+        ],
+        "suggestedQuizTopics": [
+            "Multi-Account Strategy",
+            "Hybrid Cloud Architecture",
+            "6R Migration Strategies",
+            "Event-Driven Architecture",
+            "Container Orchestration (ECS vs EKS)",
+            "Cross-Region Disaster Recovery",
+            "Cost Optimization at Scale",
+            "Network Design (Transit Gateway, Direct Connect)",
+        ],
+        "systemPromptContext": (
+            "You are helping a student prepare for the AWS SAP-C02 (Solutions Architect Professional) certification exam.\n"
+            "This is an advanced exam — focus on complex, multi-service architectures and enterprise-level decisions.\n"
+            "Always relate explanations to the 4 exam domains:\n"
+            "1. Design for Organizational Complexity (26% weight)\n"
+            "2. Design for New Solutions (29% weight)\n"
+            "3. Migration Planning (25% weight)\n"
+            "4. Cost Control & Performance Optimization (20% weight)"
+        ),
+    },
+}
+
+
+def get_profile(cert_id: str) -> dict:
+    return CERT_PROFILES.get(cert_id, CERT_PROFILES["common"])
+
+
+def get_all_profiles_summary() -> list[dict]:
+    return [
+        {"id": p["id"], "name": p["name"], "fullName": p["fullName"]}
+        for p in CERT_PROFILES.values()
+    ]
