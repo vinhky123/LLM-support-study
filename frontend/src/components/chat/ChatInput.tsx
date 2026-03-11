@@ -95,7 +95,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
         onMouseDown={() => setIsExpanded(false)}
       >
         <div
-          className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-border flex flex-col"
+          className="w-full max-w-2xl bg-surface rounded-2xl shadow-2xl border border-border flex flex-col"
           onMouseDown={(e) => e.stopPropagation()}
              style={{ height: "420px" }}>
 
@@ -118,7 +118,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
               <img src={image.preview} alt="Preview" className="h-16 rounded-lg border border-border" />
               <button
                 onClick={() => setImage(null)}
-                className="p-0.5 rounded-full bg-gray-200 hover:bg-gray-300 -ml-3 -mt-1"
+                className="p-0.5 rounded-full bg-surface-hover hover:bg-border -ml-3 -mt-1 text-text-secondary"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -133,7 +133,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
             onChange={(e) => setText(e.target.value)}
             onPaste={handlePaste}
             placeholder="Viết câu hỏi dài... (Enter để xuống dòng)"
-            className="flex-1 w-full px-4 py-3 text-sm bg-white focus:outline-none"
+            className="flex-1 w-full px-4 py-3 text-sm bg-surface focus:outline-none"
             style={{ resize: "none" }}
           />
 
@@ -181,7 +181,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
   /* Inline mode */
   return (
     <div
-      className="border-t border-border bg-white p-4"
+      className="border-t border-border bg-surface p-4"
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
     >
@@ -190,7 +190,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
           <img src={image.preview} alt="Preview" className="h-16 rounded-lg border border-border" />
           <button
             onClick={() => setImage(null)}
-            className="p-0.5 rounded-full bg-gray-200 hover:bg-gray-300 -ml-3 -mt-1"
+            className="p-0.5 rounded-full bg-surface-hover hover:bg-border -ml-3 -mt-1 text-text-secondary"
           >
             <X className="w-3 h-3" />
           </button>

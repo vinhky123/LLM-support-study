@@ -88,7 +88,7 @@ export default function MindMapView({ content }: Props) {
         <button
           onClick={handleFit}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs
-                     bg-white border border-border text-text-secondary
+                     bg-surface border border-border text-text-secondary
                      hover:border-primary hover:text-primary transition-colors shadow-sm"
         >
           <Maximize2 className="w-3.5 h-3.5" />
@@ -97,7 +97,7 @@ export default function MindMapView({ content }: Props) {
         <button
           onClick={handleExpandAll}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs
-                     bg-white border border-border text-text-secondary
+                     bg-surface border border-border text-text-secondary
                      hover:border-primary hover:text-primary transition-colors shadow-sm"
         >
           <ChevronsUpDown className="w-3.5 h-3.5" />
@@ -106,7 +106,7 @@ export default function MindMapView({ content }: Props) {
         <button
           onClick={handleCollapseAll}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs
-                     bg-white border border-border text-text-secondary
+                     bg-surface border border-border text-text-secondary
                      hover:border-primary hover:text-primary transition-colors shadow-sm"
         >
           <ChevronsDownUp className="w-3.5 h-3.5" />
@@ -118,7 +118,7 @@ export default function MindMapView({ content }: Props) {
       </div>
 
       {/* Map canvas */}
-      <div className="flex-1 bg-white rounded-xl border border-border overflow-hidden">
+      <div className="flex-1 bg-surface rounded-xl border border-border overflow-hidden">
         <svg ref={svgRef} className="w-full h-full" />
       </div>
     </div>

@@ -24,7 +24,7 @@ export default function MessageBubble({ message }: Props) {
         className={`max-w-[75%] rounded-2xl px-4 py-3 ${
           isUser
             ? "bg-primary text-white rounded-tr-sm"
-            : "bg-white border border-border rounded-tl-sm shadow-sm"
+            : "bg-surface border border-border rounded-tl-sm shadow-sm"
         }`}
       >
         {message.image?.preview && (

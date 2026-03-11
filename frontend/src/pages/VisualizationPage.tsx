@@ -94,7 +94,7 @@ export default function VisualizationPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-6 py-3 bg-white border-b border-border flex items-center justify-between">
+      <div className="px-6 py-3 bg-surface border-b border-border flex items-center justify-between">
         <div>
           <h2 className="font-semibold text-sm">Knowledge Visualization</h2>
           <p className="text-xs text-text-secondary">
@@ -115,7 +115,7 @@ export default function VisualizationPage() {
       </div>
 
       {content && (
-        <div className="px-6 pt-3 bg-white border-b border-border">
+        <div className="px-6 pt-3 bg-surface border-b border-border">
           <div className="flex gap-1">
             {VIEW_TABS.map(({ id, label, icon: Icon }) => (
               <button

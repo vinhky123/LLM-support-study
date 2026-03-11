@@ -103,7 +103,7 @@ export default function QuizPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-6 py-3 bg-white border-b border-border">
+      <div className="px-6 py-3 bg-surface border-b border-border">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-semibold text-sm flex items-center gap-2">
@@ -185,7 +185,7 @@ export default function QuizPage() {
                     handleGenerateQuiz(t);
                   }}
                   disabled={loading}
-                  className="px-3 py-1.5 rounded-full bg-white border border-border text-xs
+                  className="px-3 py-1.5 rounded-full bg-surface border border-border text-xs
                              hover:border-primary hover:text-primary hover:bg-primary-light
                              disabled:opacity-50 transition-colors"
                 >
@@ -236,7 +236,7 @@ export default function QuizPage() {
               ))}
             </div>
 
-            <div className="bg-white rounded-2xl border border-border shadow-sm p-6">
+            <div className="bg-surface rounded-2xl border border-border shadow-sm p-6">
               {questions[currentIdx]?.domain && (
                 <span
                   className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-3 border ${

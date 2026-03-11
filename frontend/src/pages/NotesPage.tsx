@@ -56,7 +56,7 @@ export default function NotesPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-6 py-3 bg-white border-b border-border flex items-center justify-between">
+      <div className="px-6 py-3 bg-surface border-b border-border flex items-center justify-between">
         <div>
           <h2 className="font-semibold text-sm flex items-center gap-2">
             <FileText className="w-4 h-4 text-primary" />
@@ -80,7 +80,7 @@ export default function NotesPage() {
 
       <div className="flex-1 overflow-hidden flex">
         {/* Sidebar: session selector + generate button */}
-        <div className="w-56 border-r border-border bg-white p-3 overflow-y-auto flex flex-col gap-3">
+        <div className="w-56 border-r border-border bg-surface-alt p-3 overflow-y-auto flex flex-col gap-3">
           <p className="text-[10px] font-semibold text-text-secondary uppercase">
             Session
           </p>
@@ -170,7 +170,7 @@ function splitIntoCards(markdown: string): string[] {
 
 function NoteCard({ content }: { content: string }) {
   return (
-    <div className="break-inside-avoid mb-4 bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+    <div className="break-inside-avoid mb-4 bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
       <div className="note-card-body px-4 py-3">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
