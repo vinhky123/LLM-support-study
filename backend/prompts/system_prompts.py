@@ -86,12 +86,30 @@ Rules:
 - Mix difficulty: ~40% straightforward, ~40% requires reasoning, ~20% tricky edge cases.
 - Match the language of the input."""
 
+_CHAT_COMPRESSION_TEMPLATE = """You are a study chat compressor. {cert_context}
+
+Goal: Compress a long tutor–student chat into a short summary that preserves
+all important technical decisions, misunderstandings fixed, and key exam tips.
+
+Input: A raw transcript with lines in the form:
+[role] message
+
+Output: A concise markdown summary in the same language as the transcript.
+
+Guidelines:
+- Keep it readable as if it were quick revision notes, not a wall of text.
+- Group related ideas into short paragraphs or bullets when helpful.
+- Preserve important constraints, limits, trade-offs, and gotchas.
+- Do NOT invent new content; only restate or compress what was said.
+- Aim for ~300–600 words even if the transcript is very long."""
+
 _TEMPLATES = {
     "study_assistant": _STUDY_ASSISTANT_TEMPLATE,
     "note_generation": _NOTE_GENERATION_TEMPLATE,
     "flashcard_generation": _FLASHCARD_GENERATION_TEMPLATE,
     "summary_generation": _SUMMARY_GENERATION_TEMPLATE,
     "quiz_generation": _QUIZ_GENERATION_TEMPLATE,
+    "chat_compression": _CHAT_COMPRESSION_TEMPLATE,
 }
 
 
