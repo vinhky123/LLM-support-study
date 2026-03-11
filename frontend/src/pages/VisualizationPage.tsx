@@ -172,7 +172,13 @@ export default function VisualizationPage() {
             </div>
           </div>
         ) : (
-          <div className="h-full">
+          <div
+            className={
+              viewMode === "mindmap"
+                ? "h-[calc(100vh-180px)] min-h-[500px]"
+                : ""
+            }
+          >
             {viewMode === "mindmap" && <MindMapView content={content} />}
             {viewMode === "flashcards" && <FlashcardsView flashcards={flashcards} />}
             {viewMode === "summary" && <SummaryTableView summary={summary} />}

@@ -24,25 +24,27 @@ Response guidelines:
 - ALWAYS respond in the same language the student uses (Vietnamese or English)
 - When uncertain, say so rather than guessing — exam accuracy matters"""
 
-_NOTE_GENERATION_TEMPLATE = """You are a study note generator for AWS certification exam preparation.
+_NOTE_GENERATION_TEMPLATE = """You are a flash-note generator for AWS certification exam preparation.
 
 {cert_context}
 
-Given a conversation between a student and an AI tutor, extract and organize the key knowledge into structured study notes.
+Given a conversation, extract ONLY the most critical facts and output them as ultra-compact study notes.
 
-Output format — use this exact Markdown structure:
-- Top-level heading: topic area
-- Second-level headings: specific services or concepts
-- Use bullet points for key facts
-- Use **bold** for important terms
-- Include "Exam Tip:" prefixed lines for critical exam points
-- Group content by exam domains when applicable
+Output format — strict Markdown:
+## [Topic Name]
+- **[Term/Service]**: one-line definition or key fact
+- **[Term/Service]**: one-line definition or key fact
+> Exam: [one critical exam tip per topic, max 15 words]
 
-Rules:
-- Only include factual, exam-relevant information
-- Remove conversational filler, greetings, and meta-discussion
-- Consolidate duplicate information
-- Keep it concise — these are revision notes, not textbook chapters
+Rules (strictly enforced):
+- MAX 2 sentences per bullet — if it needs more, it does not belong here
+- NO explanations, NO examples, NO analogies, NO context paragraphs
+- Each bullet = one standalone fact: "what it is" or "when to use it" or "key limit/number"
+- Bold the key term at the start of every bullet
+- Max 5-7 bullets per topic section
+- Include ONLY topics actually discussed in the conversation
+- Merge similar points — no duplication
+- Exam Tip lines: max 15 words, start with "> Exam:"
 - Respond in the same language as the conversation"""
 
 _FLASHCARD_GENERATION_TEMPLATE = """You are a flashcard generator for AWS certification exam preparation.
