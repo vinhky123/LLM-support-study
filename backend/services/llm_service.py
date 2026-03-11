@@ -1,4 +1,3 @@
-import base64
 import json
 import httpx
 from config import AI_GATEWAY_API_KEY, AI_GATEWAY_BASE_URL, DEFAULT_MODEL
@@ -61,6 +60,16 @@ def _build_messages(
     return messages
 
 
+def _extract_usage(data: dict) -> dict:
+    """Extract token usage from an OpenAI-compatible response."""
+    usage = data.get("usage") or {}
+    return {
+        "promptTokens": usage.get("prompt_tokens", 0),
+        "completionTokens": usage.get("completion_tokens", 0),
+        "totalTokens": usage.get("total_tokens", 0),
+    }
+
+
 def chat_stream(
     history: list[dict],
     user_message: str,
@@ -68,13 +77,16 @@ def chat_stream(
     system_instruction: str = "",
     model: str = "",
 ):
-    """Stream chat response from Vercel AI Gateway. Yields text chunks."""
+    """Stream chat response. Yields text chunks and finally a usage dict."""
     messages = _build_messages(history, user_message, image, system_instruction)
     body = {
         "model": model or DEFAULT_MODEL,
         "messages": messages,
         "stream": True,
+        "stream_options": {"include_usage": True},
     }
+
+    usage = {"promptTokens": 0, "completionTokens": 0, "totalTokens": 0}
 
     with httpx.Client(timeout=120) as client:
         with client.stream(
@@ -92,16 +104,20 @@ def chat_stream(
                     break
                 try:
                     parsed = json.loads(data)
+                    if parsed.get("usage"):
+                        usage = _extract_usage(parsed)
                     delta = parsed.get("choices", [{}])[0].get("delta", {})
                     content = delta.get("content")
                     if content:
-                        yield content
+                        yield {"type": "text", "text": content}
                 except (json.JSONDecodeError, IndexError, KeyError):
                     continue
 
+    yield {"type": "usage", "usage": usage}
 
-def generate_text(prompt: str, system_instruction: str, model: str = "") -> str:
-    """Generate a complete text response (non-streaming)."""
+
+def generate_text(prompt: str, system_instruction: str, model: str = "") -> tuple[str, dict]:
+    """Generate a complete text response. Returns (text, usage)."""
     body = {
         "model": model or DEFAULT_MODEL,
         "messages": [
@@ -119,14 +135,16 @@ def generate_text(prompt: str, system_instruction: str, model: str = "") -> str:
         )
         response.raise_for_status()
         data = response.json()
-        return data["choices"][0]["message"]["content"]
+        text = data["choices"][0]["message"]["content"]
+        usage = _extract_usage(data)
+        return text, usage
 
 
-def generate_json(prompt: str, system_instruction: str, model: str = "") -> list | dict:
-    """Generate and parse a JSON response."""
-    raw = generate_text(prompt, system_instruction, model)
+def generate_json(prompt: str, system_instruction: str, model: str = "") -> tuple[list | dict, dict]:
+    """Generate and parse a JSON response. Returns (parsed_json, usage)."""
+    raw, usage = generate_text(prompt, system_instruction, model)
     cleaned = raw.strip()
     if cleaned.startswith("```"):
         cleaned = cleaned.split("\n", 1)[1]
         cleaned = cleaned.rsplit("```", 1)[0]
-    return json.loads(cleaned.strip())
+    return json.loads(cleaned.strip()), usage

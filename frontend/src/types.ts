@@ -52,8 +52,24 @@ export interface AIModel {
   provider: string;
   inputCost: string;
   outputCost: string;
+  inputPricePerM: number;
+  outputPricePerM: number;
   vision: boolean;
   description: string;
+}
+
+export interface TokenUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
+export interface UsageRecord {
+  month: string;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalCostUsd: number;
+  requests: number;
 }
 
 export interface Flashcard {
