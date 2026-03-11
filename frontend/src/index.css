@@ -22,6 +22,29 @@
   --color-aws-orange: #ff9900;
 }
 
+/* ─── Dark mode overrides (Cursor-like low-contrast palette) ─── */
+.dark {
+  --color-primary: #7aa2f7;
+  --color-primary-hover: #89b4fa;
+  --color-primary-light: #1a2744;
+  --color-surface: #1e1e2e;
+  --color-surface-alt: #181825;
+  --color-surface-hover: #2a2d3e;
+  --color-sidebar: #11111b;
+  --color-sidebar-hover: #1e1e2e;
+  --color-sidebar-active: #1a2744;
+  --color-text: #cdd6f4;
+  --color-text-secondary: #6e6c7e;
+  --color-text-sidebar: #a6adc8;
+  --color-text-sidebar-active: #cdd6f4;
+  --color-border: #313244;
+  --color-success: #a6e3a1;
+  --color-warning: #f9e2af;
+  --color-danger: #f38ba8;
+  --color-info: #89dceb;
+  --color-aws-orange: #fab387;
+}
+
 body {
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
@@ -43,6 +66,7 @@ body {
   background: var(--color-text-secondary);
 }
 
+/* ─── Markdown ─── */
 .markdown-body h1,
 .markdown-body h2,
 .markdown-body h3 {
@@ -60,18 +84,20 @@ body {
 }
 .markdown-body li { margin: 0.25em 0; }
 .markdown-body code {
-  background: var(--color-surface-alt);
+  background: var(--color-surface-hover);
   padding: 0.15em 0.4em;
   border-radius: 4px;
   font-size: 0.9em;
+  color: var(--color-text);
 }
 .markdown-body pre {
-  background: #1e293b;
-  color: #e2e8f0;
+  background: #11111b;
+  color: #cdd6f4;
   padding: 1em;
   border-radius: 8px;
   overflow-x: auto;
   margin: 0.75em 0;
+  border: 1px solid var(--color-border);
 }
 .markdown-body pre code {
   background: none;
