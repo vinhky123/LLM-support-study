@@ -4,6 +4,8 @@ import { Markmap } from "markmap-view";
 import type { IPureNode } from "markmap-common";
 import { Maximize2, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 
+
+
 interface Props {
   content: string;
 }
@@ -18,13 +20,13 @@ function walkNodes(node: IPureNode, fn: (n: IPureNode, depth: number) => void, d
 export default function MindMapView({ content }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const markmapRef = useRef<Markmap | null>(null);
-  const rootDataRef = useRef<IPureNode | null>(null);
+  const contentRef = useRef(content);
+  contentRef.current = content;
 
   useEffect(() => {
     if (!svgRef.current || !content) return;
 
     const { root } = transformer.transform(content);
-    rootDataRef.current = root;
 
     if (markmapRef.current) {
       markmapRef.current.setData(root);
@@ -34,7 +36,7 @@ export default function MindMapView({ content }: Props) {
         svgRef.current,
         {
           duration: 400,
-          initialExpandLevel: 1,
+          initialExpandLevel: 2,
           toggleRecursively: false,
           spacingHorizontal: 80,
           spacingVertical: 6,
@@ -58,8 +60,8 @@ export default function MindMapView({ content }: Props) {
   }, []);
 
   const handleExpandAll = useCallback(() => {
-    if (!markmapRef.current || !rootDataRef.current) return;
-    const root = rootDataRef.current;
+    if (!markmapRef.current || !contentRef.current) return;
+    const { root } = transformer.transform(contentRef.current);
     walkNodes(root, (node) => {
       if (!node.payload) node.payload = {};
       node.payload.fold = 0;
@@ -69,8 +71,8 @@ export default function MindMapView({ content }: Props) {
   }, []);
 
   const handleCollapseAll = useCallback(() => {
-    if (!markmapRef.current || !rootDataRef.current) return;
-    const root = rootDataRef.current;
+    if (!markmapRef.current || !contentRef.current) return;
+    const { root } = transformer.transform(contentRef.current);
     walkNodes(root, (node, depth) => {
       if (!node.payload) node.payload = {};
       node.payload.fold = depth > 0 ? 1 : 0;
