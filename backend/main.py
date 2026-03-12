@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import chat, notes, quiz
+from routers import chat, notes, quiz, usage
 
 app = FastAPI(title="Cloud Study Assistant API")
 
@@ -15,6 +15,7 @@ app.add_middleware(
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(notes.router, prefix="/api/notes", tags=["notes"])
 app.include_router(quiz.router, prefix="/api/quiz", tags=["quiz"])
+app.include_router(usage.router, prefix="/api/usage", tags=["usage"])
 
 
 @app.get("/api/health")

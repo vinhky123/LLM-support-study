@@ -110,6 +110,29 @@ export async function getModels(): Promise<{ models: AIModel[]; default: string 
   return res.json();
 }
 
+export async function getUsageRecords(): Promise<Record<string, unknown>> {
+  try {
+    const res = await fetch(`${API_BASE}/usage`);
+    if (!res.ok) return {};
+    const data = await res.json();
+    return data.records ?? {};
+  } catch {
+    return {};
+  }
+}
+
+export async function saveUsageRecords(records: Record<string, unknown>): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/usage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ records }),
+    });
+  } catch {
+    // silently fail — localStorage is still the in-memory fallback
+  }
+}
+
 export async function generateNotes(
   messages: ChatMessage[],
   certId: string = "common",
