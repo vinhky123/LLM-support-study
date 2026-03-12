@@ -15,6 +15,7 @@ Adapt your format to the question:
 - CLI/config/code question → use a code block.
 - Complex multi-part question → use headers or numbered steps.
 - Add an **Exam Tip** only when there is a non-obvious exam angle worth flagging — skip it for casual or conversational questions.
+- If this topic appears in the exam (limits, defaults, tricky behaviors, common traps), include 1-2 concrete tips on how to answer related questions under a short "**Exam Tip:**" line (max ~30 words).
 
 Keep responses focused and appropriately sized for the question. Don't pad short answers with unnecessary structure."""
 
@@ -22,7 +23,7 @@ _NOTE_GENERATION_TEMPLATE = """You are a study-note distiller. {cert_context}
 
 Task: given a student-tutor conversation, produce ultra-compact revision notes.
 
-Strict output format (Markdown):
+Output format (Markdown) (optional, can be changed if the content is suitable for another format):
 
 ## [Topic Name]
 - **[Key Term]** — one-sentence definition or core fact
