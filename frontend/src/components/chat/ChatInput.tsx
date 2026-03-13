@@ -70,6 +70,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
   );
 
   const handleSubmit = () => {
+    if (disabled) return;
     const trimmed = text.trim();
     if (!trimmed && !image) return;
     onSend(trimmed, image ?? undefined);
@@ -81,6 +82,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
     if (e.key === "Enter" && !e.shiftKey && !isExpanded) {
       e.preventDefault();
       handleSubmit();
@@ -230,7 +232,6 @@ export default function ChatInput({ onSend, disabled }: Props) {
                        focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary
                        overflow-y-auto transition-all"
             style={{ minHeight: `${MIN_HEIGHT}px` }}
-            disabled={disabled}
           />
           {atMax && (
             <button
