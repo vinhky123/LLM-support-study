@@ -15,6 +15,7 @@ import {
   RotateCcw,
   Sun,
   Moon,
+  Edit2,
 } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
 import { useUsageStore } from "../../stores/usageStore";
@@ -68,6 +69,8 @@ export default function Sidebar() {
   const [defaultModelId, setDefaultModelId] = useState("");
   const [certDropdownOpen, setCertDropdownOpen] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editingSessionName, setEditingSessionName] = useState("");
   const certDropdownRef = useRef<HTMLDivElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -285,7 +288,54 @@ export default function Sidebar() {
               }}
             >
               <MessageSquare className="w-3 h-3 shrink-0 opacity-50" />
-              <span className="truncate flex-1">{session.name}</span>
+              {editingSessionId === session.id ? (
+                <input
+                  className="flex-1 bg-transparent border border-white/20 rounded px-1 py-0.5 text-xs outline-none focus:border-aws-orange"
+                  value={editingSessionName}
+                  onChange={(e) => setEditingSessionName(e.target.value)}
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                  onBlur={() => {
+                    const trimmed = editingSessionName.trim();
+                    if (trimmed && trimmed !== session.name) {
+                      useChatStore.getState().renameSession(session.id, trimmed);
+                    }
+                    setEditingSessionId(null);
+                    setEditingSessionName("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.currentTarget.blur();
+                    } else if (e.key === "Escape") {
+                      e.preventDefault();
+                      setEditingSessionId(null);
+                      setEditingSessionName("");
+                    }
+                  }}
+                />
+              ) : (
+                <span
+                  className="truncate flex-1"
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    setEditingSessionId(session.id);
+                    setEditingSessionName(session.name);
+                  }}
+                >
+                  {session.name}
+                </span>
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingSessionId(session.id);
+                  setEditingSessionName(session.name);
+                }}
+                className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-sidebar-hover transition-all"
+                title="Rename"
+              >
+                <Edit2 className="w-3 h-3" />
+              </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
