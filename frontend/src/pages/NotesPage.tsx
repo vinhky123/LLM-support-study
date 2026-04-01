@@ -34,9 +34,7 @@ export default function NotesPage() {
       const result = await generateNotes(session.messages, currentCertId, currentModelId);
       setNotes(result);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to generate notes",
-      );
+      setError(err instanceof Error ? err.message : "Failed to generate notes");
     } finally {
       setLoading(false);
     }
@@ -48,61 +46,62 @@ export default function NotesPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `study-notes-${session?.name || "untitled"}-${new Date().toISOString().slice(0, 10)}.md`;
+    a.download = `notes-${session?.name || "untitled"}-${new Date().toISOString().slice(0, 10)}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
+  const noteCards = splitIntoCards(notes);
+
   return (
     <div className="flex flex-col h-full">
-      <div className="px-6 py-3 bg-white border-b border-border flex items-center justify-between">
+      {/* Header */}
+      <div className="px-6 py-3 bg-surface border-b border-border flex items-center justify-between">
         <div>
           <h2 className="font-semibold text-sm flex items-center gap-2">
             <FileText className="w-4 h-4 text-primary" />
             Study Notes
           </h2>
           <p className="text-xs text-text-secondary">
-            Tạo note từ cuộc hội thoại hoặc tải note đã có
+            Flash notes — tóm tắt cô đọng từ hội thoại
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {notes && (
-            <button
-              onClick={handleDownload}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs
-                         bg-surface-alt border border-border hover:bg-surface-hover transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download .md
-            </button>
-          )}
-        </div>
+        {notes && (
+          <button
+            onClick={handleDownload}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs
+                       bg-surface-alt border border-border hover:bg-surface-hover transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download .md
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-hidden flex">
-        <div className="w-64 border-r border-border bg-white p-4 overflow-y-auto">
-          <h3 className="text-xs font-semibold text-text-secondary uppercase mb-3">
-            Chọn session để tạo notes
-          </h3>
+        {/* Sidebar: session selector + generate button */}
+        <div className="w-56 border-r border-border bg-surface-alt p-3 overflow-y-auto flex flex-col gap-3">
+          <p className="text-[10px] font-semibold text-text-secondary uppercase">
+            Session
+          </p>
+
           {sessions.length === 0 ? (
-            <p className="text-xs text-text-secondary">
-              Chưa có session nào. Hãy chat trước!
-            </p>
+            <p className="text-xs text-text-secondary">Chưa có session nào.</p>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-1 flex-1">
               {sessions.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => switchSession(s.id)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${
+                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs transition-colors ${
                     s.id === currentSessionId
                       ? "bg-primary-light text-primary font-medium border border-primary/20"
                       : "hover:bg-surface-hover"
                   }`}
                 >
                   <div className="font-medium truncate">{s.name}</div>
-                  <div className="text-text-secondary mt-0.5">
-                    {s.messages.length} messages
+                  <div className="text-[10px] text-text-secondary mt-0.5">
+                    {s.messages.length} msgs
                   </div>
                 </button>
               ))}
@@ -113,21 +112,22 @@ export default function NotesPage() {
             <button
               onClick={handleGenerate}
               disabled={loading}
-              className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5
+              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2
                          rounded-lg bg-primary text-white text-xs font-medium
                          hover:bg-primary-hover disabled:opacity-50 transition-colors"
             >
               {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-3.5 h-3.5" />
               )}
-              {loading ? "Generating..." : "Generate Notes"}
+              {loading ? "Generating..." : "Generate"}
             </button>
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        {/* Notes content */}
+        <div className="flex-1 overflow-y-auto p-5 bg-surface-alt">
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -135,30 +135,78 @@ export default function NotesPage() {
             </div>
           )}
 
-          {notes ? (
-            <div className="max-w-3xl mx-auto bg-white rounded-xl border border-border p-8 shadow-sm">
-              <div className="markdown-body">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {notes}
-                </ReactMarkdown>
-              </div>
-            </div>
-          ) : (
+          {!notes ? (
             <div className="flex items-center justify-center h-full text-center">
               <div>
-                <FileText className="w-12 h-12 text-border mx-auto mb-3" />
-                <h3 className="font-medium text-text-secondary mb-1">
+                <FileText className="w-10 h-10 text-border mx-auto mb-3" />
+                <p className="text-sm font-medium text-text-secondary mb-1">
                   No notes yet
-                </h3>
-                <p className="text-sm text-text-secondary">
-                  Chọn một session và nhấn "Generate Notes" để tạo ghi chú
-                  <br />
-                  hoặc tải file .md lên trang Visualize
+                </p>
+                <p className="text-xs text-text-secondary">
+                  Chọn session bên trái và nhấn Generate
                 </p>
               </div>
             </div>
+          ) : (
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-0">
+              {noteCards.map((card, i) => (
+                <NoteCard key={i} content={card} />
+              ))}
+            </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** Split a markdown string into per-## sections */
+function splitIntoCards(markdown: string): string[] {
+  if (!markdown.trim()) return [];
+  const sections = markdown.split(/(?=^## )/m).filter((s) => s.trim());
+  if (sections.length <= 1) return [markdown];
+  return sections;
+}
+
+function NoteCard({ content }: { content: string }) {
+  return (
+    <div className="break-inside-avoid mb-4 bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
+      <div className="note-card-body px-4 py-3">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            h2: ({ children }) => (
+              <h2 className="text-xs font-bold text-primary uppercase tracking-wide mb-2 pb-1.5 border-b border-border">
+                {children}
+              </h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="text-xs font-semibold text-text mt-2 mb-1">{children}</h3>
+            ),
+            ul: ({ children }) => (
+              <ul className="space-y-1 mb-2">{children}</ul>
+            ),
+            li: ({ children }) => (
+              <li className="flex items-start gap-1.5 text-[11px] leading-snug text-text">
+                <span className="mt-1 w-1 h-1 rounded-full bg-primary/50 shrink-0" />
+                <span>{children}</span>
+              </li>
+            ),
+            blockquote: ({ children }) => (
+              <div className="mt-2 px-2.5 py-1.5 rounded-lg bg-aws-orange/8 border-l-2 border-aws-orange text-[10px] font-medium text-aws-orange leading-snug">
+                {children}
+              </div>
+            ),
+            p: ({ children }) => (
+              <p className="text-[11px] leading-snug text-text mb-1">{children}</p>
+            ),
+            strong: ({ children }) => (
+              <strong className="font-semibold text-text">{children}</strong>
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
       </div>
     </div>
   );

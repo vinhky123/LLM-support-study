@@ -13,9 +13,12 @@ import {
   Eye,
   Coins,
   RotateCcw,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
 import { useUsageStore } from "../../stores/usageStore";
+import { useThemeStore } from "../../stores/themeStore";
 import { getProfiles, getDomains, getModels } from "../../services/api";
 import type { CertProfile, Domain, DomainProgress, AIModel } from "../../types";
 
@@ -57,6 +60,7 @@ export default function Sidebar() {
   } = useChatStore();
 
   const { getCurrentRecord, resetCurrentMonth, setModels: setUsageModels } = useUsageStore();
+  const { isDark, toggle: toggleTheme } = useThemeStore();
 
   const [profiles, setProfiles] = useState<CertProfile[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
@@ -124,9 +128,16 @@ export default function Sidebar() {
       <div className="p-4 border-b border-white/10 space-y-2">
         <div className="flex items-center gap-2">
           <GraduationCap className="w-6 h-6 text-aws-orange" />
-          <h1 className="font-bold text-white text-sm leading-tight">
+          <h1 className="font-bold text-white text-sm leading-tight flex-1">
             Cloud Study
           </h1>
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-text-sidebar opacity-70 hover:opacity-100"
+            title={isDark ? "Switch to Light mode" : "Switch to Dark mode"}
+          >
+            {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+          </button>
         </div>
 
         {/* Cert Dropdown */}

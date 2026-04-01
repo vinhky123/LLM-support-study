@@ -89,7 +89,7 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-full bg-surface-alt">
       {/* Header */}
-      <div className="px-6 py-3 bg-white border-b border-border flex items-center justify-between">
+      <div className="px-6 py-3 bg-surface border-b border-border flex items-center justify-between">
         <div>
           <h2 className="font-semibold text-sm">
             {session?.name ?? "New Chat"}

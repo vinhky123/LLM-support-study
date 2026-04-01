@@ -36,7 +36,7 @@ export default function QuickPrompts({ prompts, onSelect }: Props) {
             key={prompt.id}
             onClick={() => onSelect(prompt.template)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
-                       bg-white border border-border text-xs text-text-secondary
+                       bg-surface border border-border text-xs text-text-secondary
                        hover:border-primary hover:text-primary hover:bg-primary-light
                        transition-colors shadow-sm"
           >

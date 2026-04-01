@@ -19,7 +19,7 @@ export default function SummaryTableView({ summary }: Props) {
       {summary.map((domain) => (
         <div
           key={domain.domainId}
-          className={`bg-white rounded-xl border border-border shadow-sm overflow-hidden
+          className={`bg-surface rounded-xl border border-border shadow-sm overflow-hidden
                       border-l-4 ${DOMAIN_STYLES[domain.domainId] ?? "border-l-gray-400"}`}
         >
           <div className="px-5 py-3 border-b border-border bg-surface-alt">

@@ -53,7 +53,7 @@ export default function FlashcardsView({ flashcards }: Props) {
         >
           {/* Front */}
           <div
-            className="bg-white rounded-2xl border border-border shadow-lg p-8 min-h-[250px]
+            className="bg-surface rounded-2xl border border-border shadow-lg p-8 min-h-[250px]
                        flex flex-col items-center justify-center text-center"
             style={{ backfaceVisibility: "hidden" }}
           >
