@@ -44,7 +44,10 @@ async def send_message(request: ChatRequest):
                 system_instruction=system_instruction,
                 model=request.model,
             ):
-                yield f"data: {json.dumps({'text': chunk})}\n\n"
+                if chunk["type"] == "text":
+                    yield f"data: {json.dumps({'text': chunk['text']})}\n\n"
+                elif chunk["type"] == "usage":
+                    yield f"data: {json.dumps({'usage': chunk['usage'], 'model': request.model or DEFAULT_MODEL})}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"

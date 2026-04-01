@@ -1,56 +1,66 @@
 # Cloud Study Assistant
 
-A local-first study companion for AWS certification exams, powered by multiple AI models via [Vercel AI Gateway](https://vercel.com/docs/ai-gateway).
+A local-first study companion for AWS certification exams, powered by [Vercel AI Gateway](https://vercel.com/docs/ai-gateway).
 
-Supports **DEA-C01** (Data Engineer), **SAA-C03** (Solutions Architect Associate), **SAP-C02** (Solutions Architect Professional), and a general AWS mode.
+Supports:
+- **DEA-C01** (Data Engineer Associate)
+- **SAA-C03** (Solutions Architect Associate)
+- **SAP-C02** (Solutions Architect Professional)
+- **Common AWS mode** (generic cloud study)
 
 ## Features
 
-- **AI Chat** — Ask questions with streaming responses. Supports image uploads (architecture diagrams, screenshots). Pre-configured quick prompts per certification.
-- **Multi-Model** — Switch between Gemini 2.0 Flash Lite, Gemini 2.0 Flash, Gemini 2.5 Flash, Grok 4.1 Fast, Amazon Nova Micro. All within a $5 free tier budget.
-- **Multi-Cert** — Switch between DEA-C01 / SAA-C03 / SAP-C02 / General mode. Prompts, domains, and quiz topics adapt automatically.
-- **Note Generation** — Summarize chat conversations into structured Markdown study notes. Download as `.md` files.
-- **Knowledge Visualization** — Upload notes and view them as:
-  - Interactive Mind Maps (powered by markmap)
-  - Flashcards with flip animation
-  - Summary tables organized by exam domain
-- **Quiz Mode** — Generate practice questions matching the exam format. Instant scoring with explanations.
-- **Domain Progress Tracker** — Track confidence across exam domains.
+- **AI Chat (streaming)** with certification-aware prompts
+- **Image upload in chat** (for models that support vision)
+- **Multi-cert mode**: switch cert profile from sidebar
+- **Multi-model mode**: switch model from sidebar
+- **Token & cost tracker**:
+  - tracks prompt/completion tokens per request
+  - calculates estimated USD cost by selected model pricing
+  - stores usage locally
+  - auto-rolls by month (new month = new counter)
+- **Auto note generation** from chat, export `.md`
+- **Knowledge visualization** from notes:
+  - Mind map
+  - Flashcards
+  - Summary table
+- **Quiz mode** with exam-style MCQ
+- **Domain progress tracker** per certification profile
 
 ## Prerequisites
 
 - Python 3.10+
 - Node.js 18+
-- A Vercel AI Gateway API key (free $5 credit when you add a payment method)
+- Docker Desktop (optional, if running with Docker)
+- Vercel AI Gateway API key
 
-## Setup
+## Get Vercel AI Gateway API Key
 
-### Lấy Vercel AI Gateway API key
+1. Go to [Vercel AI Gateway](https://vercel.com/~/ai-gateway)
+2. Login / create Vercel account
+3. Open **Settings** and create an API key
+4. Add payment method to unlock the free credit bucket (Vercel $5 credit flow)
 
-1. Truy cập [Vercel AI Gateway](https://vercel.com/~/ai-gateway)
-2. Đăng nhập / tạo tài khoản Vercel
-3. Vào **Settings** > tạo API Key
-4. Thêm payment method để nhận $5 free credit (bị charge $0, chỉ verify thẻ)
+Then create `backend/.env` from example:
 
-> $5 đủ dùng cho hàng nghìn requests với các model rẻ như Gemini 2.0 Flash Lite ($0.075/M tokens) hoặc Nova Micro ($0.035/M tokens).
+```bash
+cp backend/.env.example backend/.env
+```
+
+Update values:
+
+```env
+AI_GATEWAY_API_KEY=your_key_here
+DEFAULT_MODEL=google/gemini-2.0-flash-lite
+```
+
+## Run Locally (without Docker)
 
 ### Backend
 
 ```bash
 cd backend
 pip install -r requirements.txt
-```
-
-Tạo file `.env` trong thư mục `backend/`:
-
-```
-AI_GATEWAY_API_KEY=paste_key_vào_đây
-DEFAULT_MODEL=google/gemini-2.0-flash-lite
-```
-
-Start the server:
-
-```bash
 uvicorn main:app --reload --port 8000
 ```
 
@@ -62,48 +72,80 @@ npm install
 npm run dev
 ```
 
-App tại **http://localhost:5173**. Vite proxy `/api/*` sang backend port 8000.
+Open: `http://localhost:5173`
 
-### Chạy cả FE + BE cùng lúc
+## Run FE + BE together
 
-**Cách 1 — Double-click (Windows):** Chạy `run.bat` ở thư mục gốc.
+- **Windows double-click**: run `run.bat` in project root
+- **Terminal**:
 
-**Cách 2 — Terminal:**
 ```bash
 npm run dev
 ```
 
-### Docker
+## Docker
+
+### Start
 
 ```bash
-# 1. Tạo backend/.env (xem hướng dẫn ở trên)
-# 2. Build và chạy
 docker compose up --build
 ```
 
-App tại **http://localhost**.
+Open app at: `http://localhost`
+
+### Stop
+
+```bash
+docker compose down
+```
+
+### Useful commands
+
+```bash
+# run in background
+docker compose up -d --build
+
+# view logs
+docker compose logs -f
+
+# rebuild a single service
+docker compose build backend
+docker compose build frontend
+
+# restart services
+docker compose restart
+```
+
+### Docker architecture
+
+- `frontend` container: Nginx serves built React app on port `80`
+- `backend` container: FastAPI on port `8000`
+- Nginx proxies `/api/*` to backend service (`http://backend:8000`)
 
 ## Available Models
 
-| Model                  | Provider | Input       | Output      | Vision | Best for              |
-| ---------------------- | -------- | ----------- | ----------- | ------ | --------------------- |
-| Gemini 2.0 Flash Lite  | Google   | $0.075/M    | $0.30/M     | Yes    | Budget study (default)|
-| Gemini 2.0 Flash       | Google   | $0.15/M     | $0.60/M     | Yes    | Balanced              |
-| Gemini 2.5 Flash       | Google   | $0.30/M     | $2.50/M     | Yes    | Best quality          |
-| Grok 4.1 Fast          | xAI      | $0.20/M     | $0.50/M     | No     | Fast text-only        |
-| Amazon Nova Micro      | Amazon   | $0.035/M    | $0.14/M     | No     | Cheapest text Q&A     |
+| Model | Provider | Input | Output | Vision | Notes |
+|---|---|---:|---:|---|---|
+| Gemini 2.0 Flash Lite | Google | $0.075 / 1M | $0.30 / 1M | Yes | Default, best cost/perf |
+| Gemini 2.0 Flash | Google | $0.15 / 1M | $0.60 / 1M | Yes | Balanced |
+| Gemini 2.5 Flash | Google | $0.30 / 1M | $2.50 / 1M | Yes | Better quality, still reasonable |
+| GPT-4o Mini | OpenAI | $0.15 / 1M | $0.60 / 1M | Yes | Affordable GPT option |
+| GPT-4.1 Mini | OpenAI | $0.40 / 1M | $1.60 / 1M | Yes | Strong mini GPT tier |
+| Claude Sonnet 4.6 | Anthropic | $3.00 / 1M | $15.00 / 1M | Yes | Claude flagship quality |
 
-Select model in the sidebar dropdown. Models with the eye icon support image uploads.
+Notes:
+- Models with **Vision = No** should be used for text-only chat.
+- Pricing shown is configured estimate used for in-app cost tracking.
 
 ## Tech Stack
 
-| Layer     | Technology                                   |
-| --------- | -------------------------------------------- |
-| LLM       | Vercel AI Gateway (multi-model)              |
-| Backend   | Python, FastAPI, httpx                       |
-| Frontend  | React 18, TypeScript, Vite                   |
-| Styling   | TailwindCSS v4                               |
-| State     | Zustand (persisted to localStorage)          |
-| Mind Maps | markmap-lib + markmap-view                   |
-| Markdown  | react-markdown + remark-gfm                 |
-| Icons     | Lucide React                                 |
+| Layer | Technology |
+|---|---|
+| LLM Gateway | Vercel AI Gateway (OpenAI-compatible REST) |
+| Backend | Python, FastAPI, httpx |
+| Frontend | React 18, TypeScript, Vite |
+| Styling | TailwindCSS v4 |
+| State | Zustand + localStorage |
+| Visualization | markmap-lib + markmap-view |
+| Markdown | react-markdown + remark-gfm |
+| Icons | Lucide React |

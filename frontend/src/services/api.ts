@@ -8,9 +8,17 @@ import type {
   QuizQuestion,
   CertProfile,
   AIModel,
+  TokenUsage,
 } from "../types";
+import { useUsageStore } from "../stores/usageStore";
 
 const API_BASE = "/api";
+
+function trackUsage(usage: TokenUsage | undefined, modelId: string) {
+  if (usage && (usage.promptTokens > 0 || usage.completionTokens > 0)) {
+    useUsageStore.getState().addUsage(usage, modelId);
+  }
+}
 
 export async function sendChatMessage(
   messages: ChatMessage[],
@@ -64,6 +72,9 @@ export async function sendChatMessage(
         if (parsed.text) {
           fullText += parsed.text;
           onChunk?.(fullText);
+        }
+        if (parsed.usage) {
+          trackUsage(parsed.usage, parsed.model || model);
         }
       } catch {
         // skip unparseable chunks
@@ -122,6 +133,7 @@ export async function generateNotes(
 
   if (!res.ok) throw new Error(`Note generation failed: ${res.status}`);
   const data = await res.json();
+  trackUsage(data.usage, data.model || model);
   return data.notes;
 }
 
@@ -138,6 +150,7 @@ export async function generateFlashcards(
 
   if (!res.ok) throw new Error(`Flashcard generation failed: ${res.status}`);
   const data = await res.json();
+  trackUsage(data.usage, data.model || model);
   return data.flashcards;
 }
 
@@ -154,6 +167,7 @@ export async function generateSummary(
 
   if (!res.ok) throw new Error(`Summary generation failed: ${res.status}`);
   const data = await res.json();
+  trackUsage(data.usage, data.model || model);
   return data.summary;
 }
 
@@ -171,6 +185,7 @@ export async function generateQuizFromTopic(
 
   if (!res.ok) throw new Error(`Quiz generation failed: ${res.status}`);
   const data = await res.json();
+  trackUsage(data.usage, data.model || model);
   return data.questions;
 }
 
@@ -188,5 +203,6 @@ export async function generateQuizFromNotes(
 
   if (!res.ok) throw new Error(`Quiz generation failed: ${res.status}`);
   const data = await res.json();
+  trackUsage(data.usage, data.model || model);
   return data.questions;
 }

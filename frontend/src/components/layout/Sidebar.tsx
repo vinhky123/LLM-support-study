@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   MessageSquare,
@@ -11,8 +11,11 @@ import {
   ChevronDown,
   Cpu,
   Eye,
+  Coins,
+  RotateCcw,
 } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
+import { useUsageStore } from "../../stores/usageStore";
 import { getProfiles, getDomains, getModels } from "../../services/api";
 import type { CertProfile, Domain, DomainProgress, AIModel } from "../../types";
 
@@ -53,14 +56,19 @@ export default function Sidebar() {
     initDomainProgress,
   } = useChatStore();
 
+  const { getCurrentRecord, resetCurrentMonth, setModels: setUsageModels } = useUsageStore();
+
   const [profiles, setProfiles] = useState<CertProfile[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [models, setModels] = useState<AIModel[]>([]);
   const [defaultModelId, setDefaultModelId] = useState("");
   const [certDropdownOpen, setCertDropdownOpen] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const certDropdownRef = useRef<HTMLDivElement>(null);
+  const modelDropdownRef = useRef<HTMLDivElement>(null);
 
   const domainProgress = getDomainProgress();
+  const usageRecord = getCurrentRecord();
   const currentProfile = profiles.find((p) => p.id === currentCertId);
   const activeModelId = currentModelId || defaultModelId;
   const currentModel = models.find((m) => m.id === activeModelId);
@@ -71,9 +79,10 @@ export default function Sidebar() {
       .then((data) => {
         setModels(data.models);
         setDefaultModelId(data.default);
+        setUsageModels(data.models);
       })
       .catch(() => {});
-  }, []);
+  }, [setUsageModels]);
 
   useEffect(() => {
     if (currentCertId === "common") {
@@ -88,6 +97,27 @@ export default function Sidebar() {
       .catch(() => {});
   }, [currentCertId, initDomainProgress]);
 
+  useEffect(() => {
+    function handleOutsideClick(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        certDropdownRef.current &&
+        !certDropdownRef.current.contains(target)
+      ) {
+        setCertDropdownOpen(false);
+      }
+      if (
+        modelDropdownRef.current &&
+        !modelDropdownRef.current.contains(target)
+      ) {
+        setModelDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
   return (
     <aside className="w-64 bg-sidebar text-text-sidebar flex flex-col h-full shrink-0">
       {/* Logo + Selectors */}
@@ -100,7 +130,7 @@ export default function Sidebar() {
         </div>
 
         {/* Cert Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={certDropdownRef}>
           <button
             onClick={() => {
               setCertDropdownOpen(!certDropdownOpen);
@@ -141,7 +171,7 @@ export default function Sidebar() {
         </div>
 
         {/* Model Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={modelDropdownRef}>
           <button
             onClick={() => {
               setModelDropdownOpen(!modelDropdownOpen);
@@ -180,6 +210,9 @@ export default function Sidebar() {
                   </div>
                   <div className="opacity-50 text-[10px]">
                     {m.provider} · {m.inputCost} in / {m.outputCost} out
+                  </div>
+                  <div className="opacity-40 text-[10px] mt-0.5 leading-snug">
+                    {m.description}
                   </div>
                 </button>
               ))}
@@ -318,6 +351,46 @@ export default function Sidebar() {
           </div>
         </div>
       )}
+
+      {/* Usage / Cost Counter */}
+      <div className="border-t border-white/10 p-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10px] font-medium uppercase opacity-50 flex items-center gap-1">
+            <Coins className="w-3 h-3" />
+            Usage ({usageRecord.month})
+          </span>
+          <button
+            onClick={resetCurrentMonth}
+            className="p-0.5 rounded hover:bg-white/10 opacity-40 hover:opacity-100 transition-all"
+            title="Reset monthly counter"
+          >
+            <RotateCcw className="w-2.5 h-2.5" />
+          </button>
+        </div>
+        <div className="bg-white/5 rounded-lg px-2.5 py-2 space-y-1">
+          <div className="flex items-baseline justify-between">
+            <span className="text-lg font-bold text-white leading-none">
+              ${usageRecord.totalCostUsd.toFixed(4)}
+            </span>
+            <span className="text-[9px] opacity-40">/ $5.00</span>
+          </div>
+          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-aws-orange transition-all duration-300"
+              style={{
+                width: `${Math.min((usageRecord.totalCostUsd / 5) * 100, 100)}%`,
+              }}
+            />
+          </div>
+          <div className="flex justify-between text-[9px] opacity-40">
+            <span>{usageRecord.requests} reqs</span>
+            <span>
+              {((usageRecord.totalInputTokens + usageRecord.totalOutputTokens) / 1000).toFixed(1)}K
+              tokens
+            </span>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 }
