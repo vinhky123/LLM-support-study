@@ -9,7 +9,8 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "80:80"
+      # Cùng cổng với Vite dev → cùng origin, localStorage (lịch sử chat) dùng chung
+      - "5173:80"
     depends_on:
       - backend
     restart: unless-stopped

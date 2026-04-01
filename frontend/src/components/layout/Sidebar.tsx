@@ -60,7 +60,7 @@ export default function Sidebar() {
     initDomainProgress,
   } = useChatStore();
 
-  const { getCurrentRecord, resetCurrentMonth, setModels: setUsageModels } = useUsageStore();
+  const { getCurrentRecord, resetCurrentMonth, setModels: setUsageModels, syncFromBackend } = useUsageStore();
   const { isDark, toggle: toggleTheme } = useThemeStore();
 
   const [profiles, setProfiles] = useState<CertProfile[]>([]);
@@ -81,6 +81,7 @@ export default function Sidebar() {
   const currentModel = models.find((m) => m.id === activeModelId);
 
   useEffect(() => {
+    syncFromBackend();
     getProfiles().then(setProfiles).catch(() => {});
     getModels()
       .then((data) => {
@@ -89,7 +90,7 @@ export default function Sidebar() {
         setUsageModels(data.models);
       })
       .catch(() => {});
-  }, [setUsageModels]);
+  }, [setUsageModels, syncFromBackend]);
 
   useEffect(() => {
     if (currentCertId === "common") {

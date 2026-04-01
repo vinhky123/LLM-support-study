@@ -44,3 +44,6 @@ Thumbs.db
 .mypy_cache/
 .coverage
 coverage/
+
+# Local persistent data (self-hosted, do not commit)
+backend/data/

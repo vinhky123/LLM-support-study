@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { TokenUsage, UsageRecord, AIModel } from "../types";
+import { getUsageRecords, saveUsageRecords } from "../services/api";
 
 function getCurrentMonth() {
   const d = new Date();
@@ -10,11 +11,13 @@ function getCurrentMonth() {
 interface UsageStore {
   records: Record<string, UsageRecord>;
   models: AIModel[];
+  _synced: boolean;
 
   setModels: (models: AIModel[]) => void;
   getCurrentRecord: () => UsageRecord;
   addUsage: (usage: TokenUsage, modelId: string) => void;
   resetCurrentMonth: () => void;
+  syncFromBackend: () => Promise<void>;
 }
 
 export const useUsageStore = create<UsageStore>()(
@@ -22,6 +25,7 @@ export const useUsageStore = create<UsageStore>()(
     (set, get) => ({
       records: {},
       models: [],
+      _synced: false,
 
       setModels: (models) => set({ models }),
 
@@ -36,6 +40,24 @@ export const useUsageStore = create<UsageStore>()(
             requests: 0,
           }
         );
+      },
+
+      syncFromBackend: async () => {
+        if (get()._synced) return;
+        try {
+          const backendRecords = await getUsageRecords();
+          if (Object.keys(backendRecords).length > 0) {
+            // Merge: backend wins on any month it has data for
+            set((state) => ({
+              records: { ...state.records, ...(backendRecords as Record<string, UsageRecord>) },
+              _synced: true,
+            }));
+          } else {
+            set({ _synced: true });
+          }
+        } catch {
+          set({ _synced: true });
+        }
       },
 
       addUsage: (usage, modelId) =>
@@ -57,24 +79,28 @@ export const useUsageStore = create<UsageStore>()(
             usage.promptTokens * inputPricePerToken +
             usage.completionTokens * outputPricePerToken;
 
-          return {
-            records: {
-              ...state.records,
-              [month]: {
-                month,
-                totalInputTokens: existing.totalInputTokens + usage.promptTokens,
-                totalOutputTokens: existing.totalOutputTokens + usage.completionTokens,
-                totalCostUsd: existing.totalCostUsd + cost,
-                requests: existing.requests + 1,
-              },
+          const newRecords = {
+            ...state.records,
+            [month]: {
+              month,
+              totalInputTokens: existing.totalInputTokens + usage.promptTokens,
+              totalOutputTokens: existing.totalOutputTokens + usage.completionTokens,
+              totalCostUsd: existing.totalCostUsd + cost,
+              requests: existing.requests + 1,
             },
           };
+
+          // Fire-and-forget save to backend
+          saveUsageRecords(newRecords);
+
+          return { records: newRecords };
         }),
 
       resetCurrentMonth: () =>
         set((state) => {
           const month = getCurrentMonth();
           const { [month]: _, ...rest } = state.records;
+          saveUsageRecords(rest);
           return { records: rest };
         }),
     }),

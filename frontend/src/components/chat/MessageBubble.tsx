@@ -1,10 +1,29 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { User, Bot } from "lucide-react";
+import { User, Bot, FileDown } from "lucide-react";
 import type { ChatMessage } from "../../types";
 
 interface Props {
   message: ChatMessage;
+}
+
+function downloadMarkdown(filename: string, content: string) {
+  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function assistantExportFilename(message: ChatMessage) {
+  const date = new Date(message.timestamp).toISOString().slice(0, 10);
+  const idPart = message.id.replace(/[^a-zA-Z0-9-_]/g, "").slice(0, 12);
+  return `aws-chat-assistant-${date}-${idPart || "msg"}.md`;
 }
 
 export default function MessageBubble({ message }: Props) {
@@ -37,10 +56,28 @@ export default function MessageBubble({ message }: Props) {
         {isUser ? (
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         ) : (
-          <div className="markdown-body text-sm">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {message.content}
-            </ReactMarkdown>
+          <div className="flex justify-between items-start gap-2">
+            <div className="markdown-body text-sm flex-1 min-w-0">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content}
+              </ReactMarkdown>
+            </div>
+            {message.content.trim() ? (
+              <button
+                type="button"
+                className="shrink-0 p-1 rounded-md text-text-secondary hover:bg-surface-alt hover:text-text -mt-0.5 -mr-1"
+                title="Tải nội dung Markdown"
+                aria-label="Tải nội dung Markdown"
+                onClick={() =>
+                  downloadMarkdown(
+                    assistantExportFilename(message),
+                    message.content,
+                  )
+                }
+              >
+                <FileDown className="w-4 h-4" />
+              </button>
+            ) : null}
           </div>
         )}
       </div>

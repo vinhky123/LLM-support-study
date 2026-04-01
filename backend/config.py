@@ -7,6 +7,15 @@ AI_GATEWAY_API_KEY = os.getenv("AI_GATEWAY_API_KEY", "")
 AI_GATEWAY_BASE_URL = os.getenv("AI_GATEWAY_BASE_URL", "https://ai-gateway.vercel.sh/v1")
 DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "google/gemini-2.0-flash-lite")
 
+# Chat history / compression (token estimates are heuristic; see CHAT_TOKEN_CHARS_PER_TOKEN)
+CHAT_SUMMARY_MODEL = os.getenv("CHAT_SUMMARY_MODEL", "google/gemini-2.0-flash-lite")
+CHAT_TOKEN_CHARS_PER_TOKEN = max(1, int(os.getenv("CHAT_TOKEN_CHARS_PER_TOKEN", "4")))
+CHAT_IMAGE_TOKEN_PENALTY = int(os.getenv("CHAT_IMAGE_TOKEN_PENALTY", "2000"))
+CHAT_HISTORY_MAX_ESTIMATED_TOKENS = int(os.getenv("CHAT_HISTORY_MAX_ESTIMATED_TOKENS", "10000"))
+CHAT_RECENT_ESTIMATED_TOKENS = int(os.getenv("CHAT_RECENT_ESTIMATED_TOKENS", "6000"))
+CHAT_SUMMARY_INPUT_MAX_CHARS = int(os.getenv("CHAT_SUMMARY_INPUT_MAX_CHARS", "20000"))
+CHAT_MESSAGE_MAX_CHARS = int(os.getenv("CHAT_MESSAGE_MAX_CHARS", "12000"))
+
 AVAILABLE_MODELS = [
     {
         "id": "google/gemini-2.0-flash-lite",

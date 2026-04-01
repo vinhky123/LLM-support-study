@@ -29,11 +29,18 @@ export async function sendChatMessage(
   model: string = "",
 ): Promise<string> {
   const body = {
-    messages: messages.map((m) => ({
-      role: m.role === "assistant" ? "model" : "user",
-      content: m.content,
-      image: m.image ? { data: m.image.data, mimeType: m.image.mimeType } : null,
-    })),
+    // Ảnh chỉ gửi qua `image` (turn hiện tại); không gửi base64 trong lịch sử → giảm payload
+    messages: messages.map((m) => {
+      const stub =
+        m.image?.data && !m.content.includes("[Đã gửi ảnh trong tin nhắn trước.]")
+          ? "\n\n[Đã gửi ảnh trong tin nhắn trước.]"
+          : "";
+      return {
+        role: m.role === "assistant" ? "model" : "user",
+        content: m.content + stub,
+        image: null,
+      };
+    }),
     message,
     image: image ? { data: image.data, mimeType: image.mimeType } : null,
     certId,
@@ -82,6 +89,12 @@ export async function sendChatMessage(
     }
   }
 
+  if (!fullText.trim()) {
+    throw new Error(
+      "Không nhận được phản hồi từ máy chủ. Vui lòng thử lại hoặc kiểm tra kết nối và API.",
+    );
+  }
+
   return fullText;
 }
 
@@ -108,6 +121,29 @@ export async function getQuizTopics(certId: string = "common"): Promise<string[]
 export async function getModels(): Promise<{ models: AIModel[]; default: string }> {
   const res = await fetch(`${API_BASE}/chat/models`);
   return res.json();
+}
+
+export async function getUsageRecords(): Promise<Record<string, unknown>> {
+  try {
+    const res = await fetch(`${API_BASE}/usage`);
+    if (!res.ok) return {};
+    const data = await res.json();
+    return data.records ?? {};
+  } catch {
+    return {};
+  }
+}
+
+export async function saveUsageRecords(records: Record<string, unknown>): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/usage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ records }),
+    });
+  } catch {
+    // silently fail — localStorage is still the in-memory fallback
+  }
 }
 
 export async function generateNotes(

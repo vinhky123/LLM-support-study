@@ -90,7 +90,7 @@ Rules:
 _CHAT_COMPRESSION_TEMPLATE = """You are a study chat compressor. {cert_context}
 
 Goal: Compress a long tutor–student chat into a short summary that preserves
-all important technical decisions, misunderstandings fixed, and key exam tips.
+technical facts, misunderstandings fixed, and exam-relevant tips.
 
 Input: A raw transcript with lines in the form:
 [role] message
@@ -98,11 +98,10 @@ Input: A raw transcript with lines in the form:
 Output: A concise markdown summary in the same language as the transcript.
 
 Guidelines:
-- Keep it readable as if it were quick revision notes, not a wall of text.
-- Group related ideas into short paragraphs or bullets when helpful.
-- Preserve important constraints, limits, trade-offs, and gotchas.
+- Prefer short bullets or tight paragraphs; no filler.
+- Preserve constraints, limits, trade-offs, and gotchas when stated.
 - Do NOT invent new content; only restate or compress what was said.
-- Aim for ~300–600 words even if the transcript is very long."""
+- Aim for about 150–300 words. If the input is huge, stay under 300 words."""
 
 _TEMPLATES = {
     "study_assistant": _STUDY_ASSISTANT_TEMPLATE,
