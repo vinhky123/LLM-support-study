@@ -1,0 +1,9 @@
+---
+description: Trả lời mặc định bằng tiếng Việt trong dự án này
+alwaysApply: true
+---
+
+# Ngôn ngữ mặc định
+
+- Trả lời người dùng **bằng tiếng Việt** trừ khi họ yêu cầu rõ ràng hoặc chỉ định ngôn ngữ khác.
+- Giữ thuật ngữ kỹ thuật / tên API / lệnh CLI bằng tiếng Anh khi cần; giải thích bằng tiếng Việt.

@@ -76,8 +76,12 @@ Open: `http://localhost:5173`
 
 ## Run FE + BE together
 
-- **Windows double-click**: run `run.bat` in project root
-- **Terminal**:
+Pick the script for your OS (same app: backend port 8000, frontend dev server):
+
+- **Windows**: `run.bat` (double-click or from repo root in CMD/PowerShell)
+- **Linux / macOS**: `./run.sh` from repo root (`chmod +x run.sh` once if needed)
+
+**Any OS** in a terminal (`npm install` once in repo root for `concurrently`):
 
 ```bash
 npm run dev

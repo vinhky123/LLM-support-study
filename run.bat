@@ -1,4 +1,5 @@
 @echo off
+REM Windows launcher; Linux/macOS use run.sh in repo root (same app).
 echo Starting Cloud Study Assistant...
 echo.
 
