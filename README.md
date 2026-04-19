@@ -136,6 +136,7 @@ docker compose restart
 | GPT-4o Mini | OpenAI | $0.15 / 1M | $0.60 / 1M | Yes | Affordable GPT option |
 | GPT-4.1 Mini | OpenAI | $0.40 / 1M | $1.60 / 1M | Yes | Strong mini GPT tier |
 | Claude Sonnet 4.6 | Anthropic | $3.00 / 1M | $15.00 / 1M | Yes | Claude flagship quality |
+| Qwen 3.6 Plus | Alibaba | $0.50 / 1M | $3.00 / 1M | No | High-quality Qwen for complex reasoning |
 
 Notes:
 - Models with **Vision = No** should be used for text-only chat.

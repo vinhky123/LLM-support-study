@@ -83,4 +83,15 @@ AVAILABLE_MODELS = [
         "vision": True,
         "description": "High-quality Claude model with vision support.",
     },
+    {
+        "id": "alibaba/qwen3.6-plus",
+        "name": "Qwen 3.6 Plus",
+        "provider": "Alibaba",
+        "inputCost": "$0.50/M tokens",
+        "outputCost": "$3.00/M tokens",
+        "inputPricePerM": 0.50,
+        "outputPricePerM": 3.00,
+        "vision": False,
+        "description": "High-quality Qwen model for complex reasoning.",
+    },
 ]
