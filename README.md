@@ -1,6 +1,6 @@
 # Cloud Study Assistant
 
-A local-first study companion for AWS certification exams, powered by [Vercel AI Gateway](https://vercel.com/docs/ai-gateway).
+A local-first study companion for AWS certification exams, powered by [OpenRouter](https://openrouter.ai) and [Vercel AI Gateway](https://vercel.com/docs/ai-gateway).
 
 Supports:
 - **DEA-C01** (Data Engineer Associate)
@@ -14,6 +14,7 @@ Supports:
 - **Image upload in chat** (for models that support vision)
 - **Multi-cert mode**: switch cert profile from sidebar
 - **Multi-model mode**: switch model from sidebar
+- **Multi-provider mode**: choose between OpenRouter and Vercel AI Gateway
 - **Token & cost tracker**:
   - tracks prompt/completion tokens per request
   - calculates estimated USD cost by selected model pricing
@@ -32,9 +33,18 @@ Supports:
 - Python 3.10+
 - Node.js 18+
 - Docker Desktop (optional, if running with Docker)
-- Vercel AI Gateway API key
+- API keys for OpenRouter and/or Vercel AI Gateway
 
-## Get Vercel AI Gateway API Key
+## Get API Keys
+
+### OpenRouter (Recommended)
+
+1. Go to [OpenRouter](https://openrouter.ai)
+2. Login / create account
+3. Go to **Keys** and create an API key
+4. Add credits to your account
+
+### Vercel AI Gateway (Optional)
 
 1. Go to [Vercel AI Gateway](https://vercel.com/~/ai-gateway)
 2. Login / create Vercel account
@@ -47,12 +57,20 @@ Then create `backend/.env` from example:
 cp backend/.env.example backend/.env
 ```
 
-Update values:
+Update values with your API keys:
 
 ```env
-AI_GATEWAY_API_KEY=your_key_here
+# OpenRouter API key
+OPENROUTER_API_KEY=your_openrouter_key_here
+
+# Vercel AI Gateway API key (optional)
+VERCEL_API_KEY=your_vercel_key_here
+
+# Default model to use
 DEFAULT_MODEL=google/gemini-2.0-flash-lite
 ```
+
+**Note**: You can use either or both providers. The app will let you choose which provider to use for each request.
 
 ## Run Locally (without Docker)
 
@@ -146,7 +164,7 @@ Notes:
 
 | Layer | Technology |
 |---|---|
-| LLM Gateway | Vercel AI Gateway (OpenAI-compatible REST) |
+| LLM Gateway | OpenRouter / Vercel AI Gateway (OpenAI-compatible REST) |
 | Backend | Python, FastAPI, httpx |
 | Frontend | React 18, TypeScript, Vite |
 | Styling | TailwindCSS v4 |

@@ -54,8 +54,9 @@ export default function ChatPage() {
           message,
           image,
           (partial) => updateLastAssistantMessage(partial),
-          state.currentCertId,
-          state.currentModelId,
+          useChatStore.getState().currentCertId,
+          useChatStore.getState().currentModelId,
+          useChatStore.getState().currentProvider,
         );
       } catch (err) {
         updateLastAssistantMessage(

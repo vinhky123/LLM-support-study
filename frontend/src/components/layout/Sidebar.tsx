@@ -16,12 +16,13 @@ import {
   Sun,
   Moon,
   Edit2,
+  Server,
 } from "lucide-react";
 import { useChatStore } from "../../stores/chatStore";
 import { useUsageStore } from "../../stores/usageStore";
 import { useThemeStore } from "../../stores/themeStore";
-import { getProfiles, getDomains, getModels } from "../../services/api";
-import type { CertProfile, Domain, DomainProgress, AIModel } from "../../types";
+import { getProfiles, getDomains, getModels, getProviders } from "../../services/api";
+import type { CertProfile, Domain, DomainProgress, AIModel, ProviderInfo } from "../../types";
 
 const NAV_ITEMS = [
   { path: "/", icon: MessageSquare, label: "Chat" },
@@ -50,8 +51,10 @@ export default function Sidebar() {
     currentSessionId,
     currentCertId,
     currentModelId,
+    currentProvider,
     setCertId,
     setModelId,
+    setProvider,
     createSession,
     switchSession,
     deleteSession,
@@ -66,13 +69,17 @@ export default function Sidebar() {
   const [profiles, setProfiles] = useState<CertProfile[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [models, setModels] = useState<AIModel[]>([]);
+  const [providers, setProviders] = useState<ProviderInfo[]>([]);
+  const [defaultProviderId, setDefaultProviderId] = useState<string>("openrouter");
   const [defaultModelId, setDefaultModelId] = useState("");
   const [certDropdownOpen, setCertDropdownOpen] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingSessionName, setEditingSessionName] = useState("");
   const certDropdownRef = useRef<HTMLDivElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
+  const providerDropdownRef = useRef<HTMLDivElement>(null);
 
   const domainProgress = getDomainProgress();
   const usageRecord = getCurrentRecord();
@@ -83,14 +90,20 @@ export default function Sidebar() {
   useEffect(() => {
     syncFromBackend();
     getProfiles().then(setProfiles).catch(() => {});
-    getModels()
+    getModels(currentProvider)
       .then((data) => {
         setModels(data.models);
         setDefaultModelId(data.default);
         setUsageModels(data.models);
       })
       .catch(() => {});
-  }, [setUsageModels, syncFromBackend]);
+    getProviders()
+      .then((data) => {
+        setProviders(data.providers);
+        setDefaultProviderId(data.default);
+      })
+      .catch(() => {});
+  }, [setUsageModels, syncFromBackend, currentProvider]);
 
   useEffect(() => {
     if (currentCertId === "common") {
@@ -119,6 +132,12 @@ export default function Sidebar() {
         !modelDropdownRef.current.contains(target)
       ) {
         setModelDropdownOpen(false);
+      }
+      if (
+        providerDropdownRef.current &&
+        !providerDropdownRef.current.contains(target)
+      ) {
+        setProviderDropdownOpen(false);
       }
     }
 
@@ -150,6 +169,7 @@ export default function Sidebar() {
             onClick={() => {
               setCertDropdownOpen(!certDropdownOpen);
               setModelDropdownOpen(false);
+              setProviderDropdownOpen(false);
             }}
             className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg
                        bg-white/5 hover:bg-white/10 text-xs transition-colors"
@@ -179,6 +199,49 @@ export default function Sidebar() {
                 >
                   <div className="font-medium">{p.name}</div>
                   <div className="opacity-50 text-[10px]">{p.fullName}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Provider Dropdown */}
+        <div className="relative" ref={providerDropdownRef}>
+          <button
+            onClick={() => {
+              setProviderDropdownOpen(!providerDropdownOpen);
+              setCertDropdownOpen(false);
+              setModelDropdownOpen(false);
+            }}
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg
+                       bg-white/5 hover:bg-white/10 text-xs transition-colors"
+          >
+            <span className="flex items-center gap-1.5 truncate">
+              <Server className="w-3 h-3 opacity-50" />
+              {providers.find(p => p.id === currentProvider)?.name ?? "Loading..."}
+            </span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 shrink-0 transition-transform ${providerDropdownOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {providerDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-sidebar-hover rounded-lg
+                           border border-white/10 shadow-xl z-50 overflow-hidden">
+              {providers.map((provider) => (
+                <button
+                  key={provider.id}
+                  onClick={() => {
+                    setProvider(provider.id);
+                    setProviderDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                    provider.id === currentProvider
+                      ? "bg-sidebar-active text-white"
+                      : "hover:bg-white/5"
+                }`}
+                >
+                  <div className="font-medium">{provider.name}</div>
+                  <div className="opacity-50 text-[10px]">{provider.website}</div>
                 </button>
               ))}
             </div>

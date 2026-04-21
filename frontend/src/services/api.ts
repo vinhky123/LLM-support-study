@@ -9,6 +9,7 @@ import type {
   CertProfile,
   AIModel,
   TokenUsage,
+  ProviderInfo,
 } from "../types";
 import { useUsageStore } from "../stores/usageStore";
 
@@ -27,6 +28,7 @@ export async function sendChatMessage(
   onChunk?: (text: string) => void,
   certId: string = "common",
   model: string = "",
+  provider: string = "openrouter",
 ): Promise<string> {
   const body = {
     // Ảnh chỉ gửi qua `image` (turn hiện tại); không gửi base64 trong lịch sử → giảm payload
@@ -45,6 +47,7 @@ export async function sendChatMessage(
     image: image ? { data: image.data, mimeType: image.mimeType } : null,
     certId,
     model,
+    provider,
   };
 
   const res = await fetch(`${API_BASE}/chat/message`, {
@@ -118,8 +121,8 @@ export async function getQuizTopics(certId: string = "common"): Promise<string[]
   return res.json();
 }
 
-export async function getModels(): Promise<{ models: AIModel[]; default: string }> {
-  const res = await fetch(`${API_BASE}/chat/models`);
+export async function getModels(provider: string = "openrouter"): Promise<{ models: AIModel[]; default: string }> {
+  const res = await fetch(`${API_BASE}/chat/models?provider=${provider}`);
   return res.json();
 }
 
@@ -134,6 +137,11 @@ export async function getUsageRecords(): Promise<Record<string, unknown>> {
   }
 }
 
+export async function getProviders(): Promise<{ providers: ProviderInfo[]; default: string }> {
+  const res = await fetch(`${API_BASE}/chat/providers`);
+  return res.json();
+}
+
 export async function saveUsageRecords(records: Record<string, unknown>): Promise<void> {
   try {
     await fetch(`${API_BASE}/usage`, {
@@ -146,10 +154,62 @@ export async function saveUsageRecords(records: Record<string, unknown>): Promis
   }
 }
 
+// --- SSE helper for streaming endpoints ---
+async function readSSE(
+  url: string,
+  body: unknown,
+  onChunk: (text: string) => void,
+): Promise<{ usage?: TokenUsage; model?: string }> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let usage: TokenUsage | undefined;
+  let model: string | undefined;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const text = decoder.decode(value, { stream: true });
+    const lines = text.split("\n");
+
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const data = line.slice(6).trim();
+      if (data === "[DONE]") break;
+
+      try {
+        const parsed = JSON.parse(data);
+        if (parsed.error) throw new Error(parsed.error);
+        if (parsed.text) onChunk(parsed.text);
+        if (parsed.usage) {
+          usage = parsed.usage;
+          model = parsed.model;
+        }
+      } catch {
+        // skip unparseable chunks
+      }
+    }
+  }
+
+  if (usage) trackUsage(usage, model || "");
+  return { usage, model };
+}
+
 export async function generateNotes(
   messages: ChatMessage[],
   certId: string = "common",
   model: string = "",
+  provider: string = "openrouter",
+  onChunk?: (text: string) => void,
 ): Promise<string> {
   const body = {
     messages: messages.map((m) => ({
@@ -159,8 +219,20 @@ export async function generateNotes(
     })),
     certId,
     model,
+    provider,
   };
 
+  // Use streaming if onChunk is provided
+  if (onChunk) {
+    let fullText = "";
+    await readSSE(`${API_BASE}/notes/generate/stream`, body, (text) => {
+      fullText += text;
+      onChunk(fullText);
+    });
+    return fullText;
+  }
+
+  // Fallback to non-streaming
   const res = await fetch(`${API_BASE}/notes/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -177,11 +249,31 @@ export async function generateFlashcards(
   content: string,
   certId: string = "common",
   model: string = "",
+  provider: string = "openrouter",
+  onChunk?: (text: string) => void,
 ): Promise<Flashcard[]> {
+  const body = { content, certId, model, provider };
+
+  if (onChunk) {
+    let fullText = "";
+    await readSSE(`${API_BASE}/notes/flashcards/stream`, body, (text) => {
+      fullText += text;
+      onChunk(fullText);
+    });
+    // Parse final JSON from accumulated text
+    const cleaned = fullText.trim();
+    if (cleaned.startsWith("```")) {
+      const parts = cleaned.split("\n");
+      const jsonBlock = parts.find((p) => p.startsWith("[")) || parts.find((p) => p.startsWith("{"));
+      if (jsonBlock) return JSON.parse(jsonBlock);
+    }
+    return JSON.parse(cleaned);
+  }
+
   const res = await fetch(`${API_BASE}/notes/flashcards`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content, certId, model }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) throw new Error(`Flashcard generation failed: ${res.status}`);
@@ -194,11 +286,30 @@ export async function generateSummary(
   content: string,
   certId: string = "common",
   model: string = "",
+  provider: string = "openrouter",
+  onChunk?: (text: string) => void,
 ): Promise<SummaryDomain[]> {
+  const body = { content, certId, model, provider };
+
+  if (onChunk) {
+    let fullText = "";
+    await readSSE(`${API_BASE}/notes/summary/stream`, body, (text) => {
+      fullText += text;
+      onChunk(fullText);
+    });
+    const cleaned = fullText.trim();
+    if (cleaned.startsWith("```")) {
+      const parts = cleaned.split("\n");
+      const jsonBlock = parts.find((p) => p.startsWith("[")) || parts.find((p) => p.startsWith("{"));
+      if (jsonBlock) return JSON.parse(jsonBlock);
+    }
+    return JSON.parse(cleaned);
+  }
+
   const res = await fetch(`${API_BASE}/notes/summary`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content, certId, model }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) throw new Error(`Summary generation failed: ${res.status}`);
@@ -212,11 +323,30 @@ export async function generateQuizFromTopic(
   count = 5,
   certId: string = "common",
   model: string = "",
+  provider: string = "openrouter",
+  onChunk?: (text: string) => void,
 ): Promise<QuizQuestion[]> {
+  const body = { topic, count, certId, model, provider };
+
+  if (onChunk) {
+    let fullText = "";
+    await readSSE(`${API_BASE}/quiz/from-topic/stream`, body, (text) => {
+      fullText += text;
+      onChunk(fullText);
+    });
+    const cleaned = fullText.trim();
+    if (cleaned.startsWith("```")) {
+      const parts = cleaned.split("\n");
+      const jsonBlock = parts.find((p) => p.startsWith("[")) || parts.find((p) => p.startsWith("{"));
+      if (jsonBlock) return JSON.parse(jsonBlock);
+    }
+    return JSON.parse(cleaned);
+  }
+
   const res = await fetch(`${API_BASE}/quiz/from-topic`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ topic, count, certId, model }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) throw new Error(`Quiz generation failed: ${res.status}`);
@@ -230,11 +360,30 @@ export async function generateQuizFromNotes(
   count = 5,
   certId: string = "common",
   model: string = "",
+  provider: string = "openrouter",
+  onChunk?: (text: string) => void,
 ): Promise<QuizQuestion[]> {
+  const body = { notes, count, certId, model, provider };
+
+  if (onChunk) {
+    let fullText = "";
+    await readSSE(`${API_BASE}/quiz/from-notes/stream`, body, (text) => {
+      fullText += text;
+      onChunk(fullText);
+    });
+    const cleaned = fullText.trim();
+    if (cleaned.startsWith("```")) {
+      const parts = cleaned.split("\n");
+      const jsonBlock = parts.find((p) => p.startsWith("[")) || parts.find((p) => p.startsWith("{"));
+      if (jsonBlock) return JSON.parse(jsonBlock);
+    }
+    return JSON.parse(cleaned);
+  }
+
   const res = await fetch(`${API_BASE}/quiz/from-notes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ notes, count, certId, model }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) throw new Error(`Quiz generation failed: ${res.status}`);

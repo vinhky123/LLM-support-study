@@ -39,7 +39,7 @@ export default function QuizPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [quizStarted, setQuizStarted] = useState(false);
-  const { currentCertId, currentModelId } = useChatStore();
+  const { currentCertId, currentModelId, currentProvider } = useChatStore();
 
   useEffect(() => {
     getQuizTopics(currentCertId)
@@ -53,7 +53,7 @@ export default function QuizPage() {
     setLoading(true);
     setError("");
     try {
-      const result = await generateQuizFromTopic(selectedTopic, 5, currentCertId, currentModelId);
+      const result = await generateQuizFromTopic(selectedTopic, 5, currentCertId, currentModelId, currentProvider);
       setQuestions(result);
       setCurrentIdx(0);
       setSelectedAnswer(null);

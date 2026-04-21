@@ -30,7 +30,7 @@ export default function VisualizationPage() {
   const [summary, setSummary] = useState<SummaryDomain[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { currentCertId, currentModelId } = useChatStore();
+  const { currentCertId, currentModelId, currentProvider } = useChatStore();
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,7 +70,7 @@ export default function VisualizationPage() {
     if (mode === "flashcards" && flashcards.length === 0 && content) {
       setLoading(true);
       try {
-        const result = await generateFlashcards(content, currentCertId, currentModelId);
+        const result = await generateFlashcards(content, currentCertId, currentModelId, currentProvider);
         setFlashcards(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to generate flashcards");
@@ -82,7 +82,7 @@ export default function VisualizationPage() {
     if (mode === "summary" && summary.length === 0 && content) {
       setLoading(true);
       try {
-        const result = await generateSummary(content, currentCertId, currentModelId);
+        const result = await generateSummary(content, currentCertId, currentModelId, currentProvider);
         setSummary(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to generate summary");

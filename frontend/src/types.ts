@@ -98,3 +98,11 @@ export interface QuizQuestion {
   explanation: string;
   domain: string;
 }
+
+export interface ProviderInfo {
+  id: string;
+  name: string;
+  description: string;
+  website: string;
+  requiresApiKey: boolean;
+}

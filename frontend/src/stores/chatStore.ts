@@ -11,6 +11,7 @@ interface ChatStore {
   currentSessionId: string | null;
   currentCertId: string;
   currentModelId: string;
+  currentProvider: string;
   domainProgressMap: Record<string, DomainProgress[]>;
   isLoading: boolean;
 
@@ -24,6 +25,7 @@ interface ChatStore {
   setLoading: (loading: boolean) => void;
   setCertId: (certId: string) => void;
   setModelId: (modelId: string) => void;
+  setProvider: (provider: string) => void;
   getDomainProgress: () => DomainProgress[];
   updateDomainProgress: (
     domainId: string,
@@ -39,6 +41,7 @@ export const useChatStore = create<ChatStore>()(
       currentSessionId: null,
       currentCertId: "common",
       currentModelId: "",
+      currentProvider: "openrouter",
       domainProgressMap: {},
       isLoading: false,
 
@@ -116,6 +119,8 @@ export const useChatStore = create<ChatStore>()(
       setCertId: (certId) => set({ currentCertId: certId }),
 
       setModelId: (modelId) => set({ currentModelId: modelId }),
+
+      setProvider: (provider) => set({ currentProvider: provider }),
 
       getDomainProgress: () => {
         const { currentCertId, domainProgressMap } = get();

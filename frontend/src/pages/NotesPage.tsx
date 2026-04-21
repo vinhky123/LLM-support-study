@@ -21,6 +21,7 @@ export default function NotesPage() {
     currentSessionId,
     currentCertId,
     currentModelId,
+    currentProvider,
     switchSession,
   } = useChatStore();
 
@@ -31,7 +32,7 @@ export default function NotesPage() {
     setLoading(true);
     setError("");
     try {
-      const result = await generateNotes(session.messages, currentCertId, currentModelId);
+      const result = await generateNotes(session.messages, currentCertId, currentModelId, currentProvider);
       setNotes(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate notes");

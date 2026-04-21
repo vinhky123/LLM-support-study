@@ -1,6 +1,6 @@
 fastapi
 uvicorn[standard]
-httpx
+httpx[http2]
 python-dotenv
 python-multipart
 pydantic
