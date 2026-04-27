@@ -1,8 +1,9 @@
 import json
 import hashlib
 import time
+import base64
 
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -11,13 +12,13 @@ from prompts.system_prompts import get_prompt
 from prompts.cert_profiles import get_profile, get_all_profiles_summary
 from config import (
     CHAT_HISTORY_MAX_ESTIMATED_TOKENS,
-    CHAT_IMAGE_TOKEN_PENALTY,
     CHAT_MESSAGE_MAX_CHARS,
     CHAT_RECENT_ESTIMATED_TOKENS,
     CHAT_SUMMARY_INPUT_MAX_CHARS,
     CHAT_SUMMARY_MODEL,
     CHAT_TOKEN_CHARS_PER_TOKEN,
     DEFAULT_MODEL,
+    IMAGE_MAX_BYTES,
     get_available_models,
 )
 
@@ -53,6 +54,10 @@ def _set_cached_summary(key: str, summary: str) -> None:
 class ImageData(BaseModel):
     data: str
     mimeType: str
+    width: int | None = None
+    height: int | None = None
+    originalBytes: int | None = None
+    compressedBytes: int | None = None
 
 
 class ChatMessage(BaseModel):
@@ -77,8 +82,21 @@ def _estimate_tokens_for_message(m: ChatMessage) -> int:
     text = m.content or ""
     n = max(0, len(text) // CHAT_TOKEN_CHARS_PER_TOKEN)
     if m.image and m.image.data:
-        n += CHAT_IMAGE_TOKEN_PENALTY
+        n += _estimate_image_tokens(m.image)
     return max(1, n) if text.strip() or (m.image and m.image.data) else 0
+
+
+def _estimate_image_tokens(image: ImageData) -> int:
+    """Estimate image token cost from pixel count with a conservative floor."""
+    if image.width and image.height and image.width > 0 and image.height > 0:
+        megapixels = (image.width * image.height) / 1_000_000
+    else:
+        try:
+            raw_len = len(base64.b64decode(image.data, validate=False))
+            megapixels = max(0.25, raw_len / 500_000)
+        except Exception:
+            megapixels = 1.0
+    return max(350, int(900 * megapixels))
 
 
 def _estimate_total_tokens(messages: list[ChatMessage]) -> int:
@@ -218,6 +236,8 @@ async def _chat_event_stream(
 
 @router.post("/message")
 async def send_message(request: ChatRequest):
+    _validate_image(request.image)
+    _validate_model_vision(request.model, request.provider, request.image)
     system_instruction = get_prompt("study_assistant", request.certId)
     history, older_transcript = _prepare_context(request.messages)
     image = request.image.model_dump() if request.image else None
@@ -235,6 +255,35 @@ async def send_message(request: ChatRequest):
         ),
         media_type="text/event-stream",
     )
+
+
+def _validate_image(image: ImageData | None) -> None:
+    if not image:
+        return
+    if image.mimeType not in {"image/jpeg", "image/png", "image/webp"}:
+        raise HTTPException(status_code=400, detail="Unsupported image type.")
+    try:
+        raw_len = len(base64.b64decode(image.data, validate=False))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Invalid image payload.") from exc
+    if raw_len > IMAGE_MAX_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Image too large. Max allowed is {IMAGE_MAX_BYTES} bytes.",
+        )
+
+
+def _validate_model_vision(model: str, provider: str, image: ImageData | None) -> None:
+    if not image:
+        return
+    available = get_available_models(provider)
+    selected_id = model or DEFAULT_MODEL
+    selected = next((m for m in available if m.get("id") == selected_id), None)
+    if selected and not selected.get("vision", False):
+        raise HTTPException(
+            status_code=400,
+            detail="Selected model does not support image input.",
+        )
 
 
 @router.get("/profiles")

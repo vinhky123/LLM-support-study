@@ -1,12 +1,18 @@
 import json
 import hashlib
 import time
+import base64
+from io import BytesIO
 from functools import lru_cache
 
 import httpx
+from PIL import Image
 
 from config import (
     DEFAULT_MODEL,
+    IMAGE_JPEG_QUALITY,
+    IMAGE_MAX_BYTES,
+    IMAGE_MAX_LONG_EDGE,
     MODEL_PRICING,
     OPENROUTER_API_KEY,
     OPENROUTER_BASE_URL,
@@ -163,7 +169,8 @@ def _build_messages(
             messages.append({"role": role, "content": text})
 
     if image and image.get("data"):
-        image_url = f"data:{image['mimeType']};base64,{image['data']}"
+        optimized_image = _optimize_image_payload(image)
+        image_url = f"data:{optimized_image['mimeType']};base64,{optimized_image['data']}"
         messages.append({
             "role": "user",
             "content": [
@@ -175,6 +182,51 @@ def _build_messages(
         messages.append({"role": "user", "content": user_message})
 
     return messages
+
+
+def _optimize_image_payload(image: dict) -> dict:
+    """Server-side image optimization as a safety layer before model call."""
+    data = image.get("data")
+    mime_type = image.get("mimeType", "image/jpeg")
+    if not data:
+        return image
+
+    try:
+        raw = base64.b64decode(data, validate=False)
+    except Exception:
+        return image
+
+    if len(raw) <= IMAGE_MAX_BYTES and mime_type in {"image/jpeg", "image/webp"}:
+        return image
+
+    try:
+        img = Image.open(BytesIO(raw))
+        if img.mode not in ("RGB", "L"):
+            img = img.convert("RGB")
+
+        long_edge = max(img.size)
+        if long_edge > IMAGE_MAX_LONG_EDGE:
+            scale = IMAGE_MAX_LONG_EDGE / long_edge
+            resized = (max(1, int(img.width * scale)), max(1, int(img.height * scale)))
+            img = img.resize(resized, Image.Resampling.LANCZOS)
+
+        output = BytesIO()
+        img.save(output, format="JPEG", quality=IMAGE_JPEG_QUALITY, optimize=True)
+        compressed = output.getvalue()
+        if len(compressed) > IMAGE_MAX_BYTES:
+            output = BytesIO()
+            img.save(output, format="JPEG", quality=max(45, IMAGE_JPEG_QUALITY - 20), optimize=True)
+            compressed = output.getvalue()
+
+        return {
+            "data": base64.b64encode(compressed).decode("utf-8"),
+            "mimeType": "image/jpeg",
+            "width": img.width,
+            "height": img.height,
+            "compressedBytes": len(compressed),
+        }
+    except Exception:
+        return image
 
 
 def _extract_usage(data: dict) -> dict:
